@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="Register"
+        android:textSize="30sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/username_register"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/textView"
+        android:layout_marginTop="10dp"
+        android:inputType="text"
+        android:paddingLeft="10dp"
+        android:background="#9CA1A6"
+        android:gravity="center_vertical"
+        android:hint="Username" />
+
+    <EditText
+        android:id="@+id/email_register"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/username_register"
+        android:layout_marginTop="10dp"
+        android:paddingLeft="10dp"
+        android:inputType="textEmailAddress"
+        android:background="#9CA1A6"
+        android:gravity="center_vertical"
+        android:hint="Email" />
+
+    <EditText
+        android:id="@+id/password_register"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Password"
+        android:paddingLeft="10dp"
+        android:inputType="textPassword"
+        android:layout_below="@id/email_register"
+        android:layout_marginTop="15dp"
+        android:background="#9CA1A6"
+        android:gravity="center_vertical"/>
+
+    <Button
+        android:id="@+id/register_button"
+        android:layout_width="382dp"
+        android:layout_height="68dp"
+        android:layout_below="@+id/password_register"
+        android:backgroundTint="@color/black"
+        android:layout_marginTop="15dp"
+        android:text="Sign up"
+        android:textColor="#FFFFFF" />
+
+</RelativeLayout>

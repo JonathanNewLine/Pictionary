@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".WaitingRoom"
+    android:background="@drawable/background"
+    android:animateLayoutChanges="true">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tool_bar"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="50dp"
+        android:gravity="center"
+        android:text="Waiting for players..."
+        android:textSize="25sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/start_game"
+        android:layout_width="307dp"
+        android:layout_height="64dp"
+        android:layout_below="@+id/invite_friends"
+        android:layout_marginTop="31dp"
+        android:backgroundTint="#9CA1A6"
+        android:layout_centerHorizontal="true"
+        android:text="Start game"
+        android:textColor="#000000"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <include
+        android:id="@+id/tool_bar"
+        layout="@layout/toolbar_game"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/users_side_bar" />
+
+    <ImageView
+        android:id="@+id/imageView6"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignTop="@+id/invite_friends"
+        android:layout_alignEnd="@+id/invite_friends"
+        android:layout_alignBottom="@+id/invite_friends"
+        android:layout_marginEnd="276dp"
+        app:srcCompat="@drawable/message" />
+
+    <Button
+        android:id="@+id/invite_friends"
+        android:layout_width="364dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageView9"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="132dp"
+        android:backgroundTint="#00AABBCC"
+        android:gravity="right"
+        android:text="Invite your friends!"
+        android:textAlignment="textEnd"
+        android:textColor="#000000"
+        android:textSize="28sp"
+        android:textStyle="italic" />
+
+    <ImageView
+        android:id="@+id/imageView8"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:layout_alignTop="@+id/time_elapsed"
+        android:layout_alignBottom="@+id/time_elapsed"
+        android:layout_marginTop="-10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="-14dp"
+        android:layout_toStartOf="@+id/time_elapsed"
+        app:srcCompat="@drawable/clock" />
+
+    <TextView
+        android:id="@+id/time_elapsed"
+        android:layout_width="226dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="60dp"
+        android:layout_marginBottom="68dp"
+        android:textColor="@color/black"
+        android:text="Elapsed time: 00:00"
+        android:textSize="25sp"
+        android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/start_game_icon"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_alignStart="@+id/start_game"
+        android:layout_alignTop="@+id/start_game"
+        android:layout_alignBottom="@+id/start_game"
+        android:layout_marginStart="35dp"
+        app:srcCompat="@drawable/play" />
+
+    <ImageView
+        android:id="@+id/imageView9"
+        android:layout_width="150dp"
+        android:layout_height="220dp"
+        android:layout_below="@+id/textView"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="60dp"
+        android:layout_marginBottom="-83dp"
+        app:srcCompat="@drawable/hourglass" />
+
+    <include
+        android:id="@+id/users_side_bar"
+        layout="@layout/users_side_bar"
+        android:visibility="gone"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"/>
+
+
+</RelativeLayout>
