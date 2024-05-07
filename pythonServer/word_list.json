@@ -1,0 +1,442 @@
+[
+    {
+        "word": "ace",
+        "count": 3
+    },
+    {
+        "word": "ant",
+        "count": 3
+    },
+    {
+        "word": "arm",
+        "count": 3
+    },
+    {
+        "word": "ash",
+        "count": 3
+    },
+    {
+        "word": "axe",
+        "count": 3
+    },
+    {
+        "word": "bad",
+        "count": 3
+    },
+    {
+        "word": "bag",
+        "count": 3
+    },
+    {
+        "word": "bar",
+        "count": 3
+    },
+    {
+        "word": "bat",
+        "count": 3
+    },
+    {
+        "word": "bed",
+        "count": 3
+    },
+    {
+        "word": "bee",
+        "count": 3
+    },
+    {
+        "word": "BMW",
+        "count": 3
+    },
+    {
+        "word": "BMX",
+        "count": 3
+    },
+    {
+        "word": "bow",
+        "count": 3
+    },
+    {
+        "word": "box",
+        "count": 3
+    },
+    {
+        "word": "boy",
+        "count": 3
+    },
+    {
+        "word": "bus",
+        "count": 3
+    },
+    {
+        "word": "can",
+        "count": 3
+    },
+    {
+        "word": "cap",
+        "count": 3
+    },
+    {
+        "word": "cat",
+        "count": 3
+    },
+    {
+        "word": "cow",
+        "count": 3
+    },
+    {
+        "word": "cup",
+        "count": 3
+    },
+    {
+        "word": "cut",
+        "count": 3
+    },
+    {
+        "word": "day",
+        "count": 3
+    },
+    {
+        "word": "dew",
+        "count": 3
+    },
+    {
+        "word": "die",
+        "count": 3
+    },
+    {
+        "word": "dig",
+        "count": 3
+    },
+    {
+        "word": "DNA",
+        "count": 3
+    },
+    {
+        "word": "dog",
+        "count": 3
+    },
+    {
+        "word": "ear",
+        "count": 3
+    },
+    {
+        "word": "eat",
+        "count": 3
+    },
+    {
+        "word": "eel",
+        "count": 3
+    },
+    {
+        "word": "egg",
+        "count": 3
+    },
+    {
+        "word": "emu",
+        "count": 3
+    },
+    {
+        "word": "end",
+        "count": 3
+    },
+    {
+        "word": "eye",
+        "count": 3
+    },
+    {
+        "word": "flu",
+        "count": 3
+    },
+    {
+        "word": "fly",
+        "count": 3
+    },
+    {
+        "word": "fog",
+        "count": 3
+    },
+    {
+        "word": "fox",
+        "count": 3
+    },
+    {
+        "word": "fur",
+        "count": 3
+    },
+    {
+        "word": "gas",
+        "count": 3
+    },
+    {
+        "word": "gem",
+        "count": 3
+    },
+    {
+        "word": "God",
+        "count": 3
+    },
+    {
+        "word": "Gru",
+        "count": 3
+    },
+    {
+        "word": "ham",
+        "count": 3
+    },
+    {
+        "word": "hat",
+        "count": 3
+    },
+    {
+        "word": "hen",
+        "count": 3
+    },
+    {
+        "word": "hop",
+        "count": 3
+    },
+    {
+        "word": "hot",
+        "count": 3
+    },
+    {
+        "word": "hug",
+        "count": 3
+    },
+    {
+        "word": "hut",
+        "count": 3
+    },
+    {
+        "word": "ice",
+        "count": 3
+    },
+    {
+        "word": "ivy",
+        "count": 3
+    },
+    {
+        "word": "jaw",
+        "count": 3
+    },
+    {
+        "word": "keg",
+        "count": 3
+    },
+    {
+        "word": "key",
+        "count": 3
+    },
+    {
+        "word": "KFC",
+        "count": 3
+    },
+    {
+        "word": "lap",
+        "count": 3
+    },
+    {
+        "word": "lid",
+        "count": 3
+    },
+    {
+        "word": "log",
+        "count": 3
+    },
+    {
+        "word": "low",
+        "count": 3
+    },
+    {
+        "word": "map",
+        "count": 3
+    },
+    {
+        "word": "mop",
+        "count": 3
+    },
+    {
+        "word": "MTV",
+        "count": 3
+    },
+    {
+        "word": "mud",
+        "count": 3
+    },
+    {
+        "word": "mug",
+        "count": 3
+    },
+    {
+        "word": "nun",
+        "count": 3
+    },
+    {
+        "word": "nut",
+        "count": 3
+    },
+    {
+        "word": "oar",
+        "count": 3
+    },
+    {
+        "word": "oil",
+        "count": 3
+    },
+    {
+        "word": "old",
+        "count": 3
+    },
+    {
+        "word": "owl",
+        "count": 3
+    },
+    {
+        "word": "pan",
+        "count": 3
+    },
+    {
+        "word": "paw",
+        "count": 3
+    },
+    {
+        "word": "pie",
+        "count": 3
+    },
+    {
+        "word": "pig",
+        "count": 3
+    },
+    {
+        "word": "pin",
+        "count": 3
+    },
+    {
+        "word": "pot",
+        "count": 3
+    },
+    {
+        "word": "pro",
+        "count": 3
+    },
+    {
+        "word": "pub",
+        "count": 3
+    },
+    {
+        "word": "ram",
+        "count": 3
+    },
+    {
+        "word": "rat",
+        "count": 3
+    },
+    {
+        "word": "red",
+        "count": 3
+    },
+    {
+        "word": "rib",
+        "count": 3
+    },
+    {
+        "word": "rug",
+        "count": 3
+    },
+    {
+        "word": "run",
+        "count": 3
+    },
+    {
+        "word": "sad",
+        "count": 3
+    },
+    {
+        "word": "sea",
+        "count": 3
+    },
+    {
+        "word": "sew",
+        "count": 3
+    },
+    {
+        "word": "shy",
+        "count": 3
+    },
+    {
+        "word": "sit",
+        "count": 3
+    },
+    {
+        "word": "ski",
+        "count": 3
+    },
+    {
+        "word": "sky",
+        "count": 3
+    },
+    {
+        "word": "son",
+        "count": 3
+    },
+    {
+        "word": "spy",
+        "count": 3
+    },
+    {
+        "word": "sun",
+        "count": 3
+    },
+    {
+        "word": "tea",
+        "count": 3
+    },
+    {
+        "word": "tie",
+        "count": 3
+    },
+    {
+        "word": "tip",
+        "count": 3
+    },
+    {
+        "word": "toe",
+        "count": 3
+    },
+    {
+        "word": "toy",
+        "count": 3
+    },
+    {
+        "word": "tug",
+        "count": 3
+    },
+    {
+        "word": "UFO",
+        "count": 3
+    },
+    {
+        "word": "USB",
+        "count": 3
+    },
+    {
+        "word": "wax",
+        "count": 3
+    },
+    {
+        "word": "web",
+        "count": 3
+    },
+    {
+        "word": "wig",
+        "count": 3
+    },
+    {
+        "word": "zoo",
+        "count": 3
+    },
+    {
+        "word": "gru",
+        "count": 3
+    }
+]
