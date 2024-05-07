@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Toolbar
+        android:id="@+id/tool_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:paddingBottom="10dp"
+        android:background="#B2E9EDF1">
+
+        <TextView
+            android:id="@+id/logged_as_main"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="15dp"
+            android:textColor="@color/black"
+            android:layout_marginTop="10dp"
+            android:text="Logged in as:\nguest"
+            android:textSize="18sp" />
+
+        <ImageView
+            android:id="@+id/user"
+            android:layout_width="37dp"
+            android:layout_height="37dp"
+            android:layout_gravity="end"
+            android:layout_marginEnd="15dp"
+            android:src="@drawable/user" />
+
+        <ImageView
+            android:id="@+id/logout"
+            android:layout_width="37dp"
+            android:layout_height="37dp"
+            android:layout_marginEnd="11dp"
+            android:layout_gravity="end"
+            android:visibility="gone"
+            android:src="@drawable/logout" />
+
+        <ImageView
+            android:id="@+id/settings"
+            android:layout_width="37dp"
+            android:layout_height="37dp"
+            android:layout_gravity="end"
+            android:layout_marginEnd="15dp"
+            android:src="@drawable/settings" />
+
+        <ImageView
+            android:id="@+id/statistics"
+            android:layout_width="37dp"
+            android:layout_height="37dp"
+            android:layout_gravity="end"
+            android:layout_marginEnd="15dp"
+            android:src="@drawable/leaderboard" />
+
+
+    </Toolbar>
+
+</RelativeLayout>
