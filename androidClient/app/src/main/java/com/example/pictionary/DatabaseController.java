@@ -14,12 +14,24 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class DatabaseController {
     private final FirebaseAuth mAuth;
     private final CollectionReference usersTable;
     private static DatabaseUser cachedUser;
+    private static DatabaseController instance;
 
-    public DatabaseController() {
+
+    public static DatabaseController getInstance() {
+        if (instance == null) {
+            instance = new DatabaseController();
+        }
+        return instance;
+    }
+
+    private DatabaseController() {
         mAuth = FirebaseAuth.getInstance();
         FirebaseFirestore database = FirebaseFirestore.getInstance();
         usersTable = database.collection("users");
@@ -91,6 +103,22 @@ public class DatabaseController {
         mAuth.signOut();
 
         callback.onLogout();
+    }
+
+    public static int getPointsByUsername(String jsonString, String username) {
+        try {
+            JSONArray jsonArray = new JSONArray(jsonString);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                if (jsonObject.getString("username").equals(username)) {
+                    return jsonObject.getInt("points");
+                }
+            }
+            return -1;
+
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
     public static DatabaseUser getCachedUser() {

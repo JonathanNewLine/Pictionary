@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -14,15 +15,12 @@ import android.widget.ImageView;
 import android.graphics.BitmapFactory;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class DrawingScreen extends BaseGameActivity {
@@ -64,7 +62,7 @@ public class DrawingScreen extends BaseGameActivity {
     private int timeLeft = ROUND_TIME;
     private int currRoundNum = 1;
     private int numOfPeopleInRoom;
-    private int numOfGames;
+    private int numOfGames = 0;
     private String correctGuess;
     private String lastUserSideBarFormat;
 
@@ -89,251 +87,70 @@ public class DrawingScreen extends BaseGameActivity {
     public Handler getMessageHandler() {
         return new Handler(Looper.getMainLooper()) {
             @Override
-            public void handleMessage(android.os.Message msg) {
+            public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
+                Bundle bundle;
                 ClientController.MessageType type = ClientController.MessageType.values()[msg.what];
                 switch (type) {
+                    case MANAGER:
+                        updateIsManager(true);
+                        break;
+                    case USERS:
+                        onReceivedUsersUpdate(msg.obj.toString());
+                        break;
+                    case EXIT_OK:
+                        break;
+                    case DRAW:
+                        getAppropriateInterface(true, DatabaseController.getCachedUser().getUsername());
+                        updateWordToDraw(msg.obj.toString());
+                        startCountdown();
+                        break;
+                    case GUESS:
+                        bundle = msg.getData();
+                        String drawerName = bundle.getString("drawerName");
+                        String clue = bundle.getString("clue");
 
+                        getAppropriateInterface(false, drawerName);
+                        updateClue(clue);
+                        startCountdown();
+                        break;
+                    case CONTINUE:
+                        continueNextRound(msg.obj.toString());
+                        break;
+                    case GO_TO_WAITING_ROOM:
+                        bundle = msg.getData();
+                        String winnerName = bundle.getString("winnerName");
+                        String winnerPoints = bundle.getString("winnerPoints");
+
+                        goToWaitingRoom(winnerName, winnerPoints);
+                        break;
+                    case CORRECT_GUESS:
+                        updateCorrectGuess();
+                        break;
+                    case WRONG_GUESS:
+                        updateWrongGuess();
+                        break;
+                    case DRAWING_BYTES:
+                        processAndDisplayBitmapFromServer(msg.obj.toString());
+                        break;
                 }
             }
         };
     }
-
-    private void getInitialPlayingMode() {
-        clientController.receiveMessage().thenAccept(message -> runOnUiThread(() -> {
-           if (message.equals("draw")) {
-               getAppropriateInterface(true, DatabaseController.getCachedUser().getUsername());
-               startCountdown();
-               listenForServerDrawer();
-           }
-           else if (message.startsWith("guess")) {
-               String drawerName = message.split("guess ")[1];
-               getAppropriateInterface(false, drawerName);
-               startCountdown();
-               listenForServerNoneDrawer();
-           }
-           else if (message.startsWith("users")) {
-               lastUserSideBarFormat = message;
-               numOfPeopleInRoom = updateUsersSideBar(message);
-               getInitialPlayingMode();
-           }
-           else {
-               getInitialPlayingMode();
-           }
-        }));
-    }
-
-    @SuppressLint({"SetTextI18n", "DefaultLocale"})
-    private void listenForServerDrawer() {
-        clientController.receiveMessage().thenAccept(message -> runOnUiThread(() -> {
-            if (message.equals("exit ok")) {
-                return;
-            }
-            else if (message.equals("alone")) {
-                clientController.sendMessage("alone ok");
-            }
-            else if (message.equals("manager")) {
-                isManager = true;
-            }
-            else if (message.startsWith("users")) {
-                lastUserSideBarFormat = message;
-                numOfPeopleInRoom = updateUsersSideBar(message);
-                currScore.setText("Your score: " + getPointsByUsername(message, DatabaseController.getCachedUser().getUsername()));
-            }
-            else if (message.startsWith("guess")) {
-                String drawerName = message.split("guess ")[1];
-                getAppropriateInterface(false, drawerName);
-                listenForServerNoneDrawer();
-                return;
-            }
-            else if (message.startsWith("continue")) {
-                String roundNumber = "";
-                numOfGames++;
-                if (numOfGames >= numOfPeopleInRoom) {
-                    numOfGames = 0;
-                    currRoundNum++;
-                    if (currRoundNum <= NUM_OF_ROUNDS) {
-                        roundNumber = String.format("Round %d/%d\n", currRoundNum, NUM_OF_ROUNDS);
-                    }
-                }
-                coolDownScreen.setVisibility(View.VISIBLE);
-                SoundEffects.playSound(SoundEffects.next);
-                disableAllViews();
-                countDownHandler.removeCallbacks(countDownUpdater);
-                correctGuess = message.split("continue ")[1];
-                hint.setText(correctGuess);
-                wordWas.setText(roundNumber + "The word was: " + correctGuess);
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        TimeUnit.SECONDS.sleep(3);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new IllegalStateException(e);
-                    }
-                }).thenAccept(unused -> runOnUiThread(() -> {
-                    coolDownScreen.setVisibility(View.GONE);
-                    paintClass.clearBoard();
-                    enableAllViews();
-                    resetClock();
-                    startCountdown();
-                    clientController.sendMessage("continue ok");
-                }));
-            }
-            else if (message.startsWith("winner")) {
-                backToWaitingRoom(message);
-                return;
-            }
-            else if (message.contains("word")){
-                String word = message.split("word: ")[1];
-                hint.setText(word);
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        TimeUnit.SECONDS.sleep(1);
-                        runOnUiThread(() -> wordWas.setText("The word was: " + word));
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new IllegalStateException(e);
-                    }
-                });
-            }
-            listenForServerDrawer();
-        }));
-    }
-
-    private void backToWaitingRoom(String data) {
-        clientController.receiveMessage().thenAccept(message -> {
-            if (message.equals("waiting")) {
-                clientController.sendMessage("waiting ok");
-                createWaitingRoomIntent(data);
-                return;
-            }
-            backToWaitingRoom(data);
-        });
-    }
-
-    private void createWaitingRoomIntent(String data) {
-        String[] winnerData = data.split("winner: ")[1].split(",");
+    private void goToWaitingRoom(String winnerName, String winnerPoints) {
         Intent intent = new Intent(DrawingScreen.this, WaitingRoom.class);
         intent.putExtra("isManager", isManager);
         intent.putExtra("gameId", gameId);
-        intent.putExtra("winnerData", winnerData);
-        intent.putExtra("selfPoints", getPointsByUsername(lastUserSideBarFormat, DatabaseController.getCachedUser().getUsername()));
+        intent.putExtra("winnerName", winnerName);
+        intent.putExtra("winnerPoints", winnerPoints);
+        intent.putExtra("selfPoints", DatabaseController.getPointsByUsername(lastUserSideBarFormat, DatabaseController.getCachedUser().getUsername()));
         startActivity(intent);
         finish();
     }
 
-    private static int getPointsByUsername(String jsonString, String username) {
-        try {
-            JSONArray jsonArray = new JSONArray(jsonString.split("users: ")[1]);
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                if (jsonObject.getString("username").equals(username)) {
-                    return jsonObject.getInt("points");
-                }
-            }
-            return -1;
-
-        } catch (Exception e) {
-            return -1;
-        }
-    }
-
-
-    @SuppressLint({"SetTextI18n", "DefaultLocale"})
-    private void listenForServerNoneDrawer() {
-        clientController.receiveMessage().thenAccept(message -> runOnUiThread(() -> {
-            if (message.equals("exit ok")) {
-                return;
-            }
-            else if (message.equals("manager")) {
-                isManager = true;
-                Toast.makeText(DrawingScreen.this, "you're the manager", Toast.LENGTH_SHORT).show();
-            }
-            else if (message.equals("correct")) {
-                SoundEffects.playSound(SoundEffects.correct);
-                updateCorrectGuess();
-            }
-            else if (message.equals("wrong")) {
-                SoundEffects.playSound(SoundEffects.wrong);
-            }
-            else if (message.startsWith("users")) {
-                lastUserSideBarFormat = message;
-                updateUsersSideBar(message);
-                currScore.setText("Your score: " + getPointsByUsername(message, DatabaseController.getCachedUser().getUsername()));
-            }
-            else if (message.startsWith("continue")) {
-                String roundNumber = "";
-                numOfGames++;
-                if (numOfGames >= numOfPeopleInRoom) {
-                    numOfGames = 0;
-                    currRoundNum++;
-                    if (currRoundNum <= NUM_OF_ROUNDS) {
-                        roundNumber = String.format("Round %d/%d\n", currRoundNum, NUM_OF_ROUNDS);
-                    }
-                }
-                coolDownScreen.setVisibility(View.VISIBLE);
-                SoundEffects.playSound(SoundEffects.next);
-                disableAllViews();
-                countDownHandler.removeCallbacks(countDownUpdater);
-                correctGuess = message.split("continue ")[1];
-                hint.setText(correctGuess);
-                wordWas.setText(roundNumber + "The word was: " + correctGuess);
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        TimeUnit.SECONDS.sleep(3);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new IllegalStateException(e);
-                    }
-                }).thenAccept(unused -> runOnUiThread(() -> {
-                    coolDownScreen.setVisibility(View.GONE);
-                    paintClass.clearBoard();
-                    enableAllViews();
-                    resetClock();
-                    startCountdown();
-                    clientController.sendMessage("continue ok");
-                }));
-            }
-            else if (message.startsWith("clue")) {
-                hint.setText(message.split("clue: ")[1]);
-            }
-            else if (message.equals("draw")) {
-                paintClass.clear();
-                getAppropriateInterface(true, DatabaseController.getCachedUser().getUsername());
-                listenForServerDrawer();
-                return;
-            }
-            else if (message.startsWith("guess")) {
-                String drawerName = message.split("guess ")[1];
-                getAppropriateInterface(false, drawerName);
-            }
-            else if (message.startsWith("winner")) {
-                backToWaitingRoom(message);
-                return;
-            }
-            else if (message.equals("alone")) {
-                clientController.sendMessage("alone ok");
-            }
-            else if (message.contains("dataBytes")){
-                String encodedBitmap;
-                try {
-                    encodedBitmap = clientController.receiveAll(message);
-                } catch (ExecutionException | InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                byte[] bitmapBytes = clientController.transformToBitmap(encodedBitmap);
-                runOnUiThread(() -> {
-                    if (bitmapBytes != null) {
-                        putBitmapOnImage(bitmapBytes);
-                    }
-                });
-            }
-            listenForServerNoneDrawer();
-        }));
-    }
-
     @SuppressLint("SetTextI18n")
     private void updateCorrectGuess() {
+        SoundEffects.playSound(SoundEffects.correct);
         allToolbars.setBackgroundColor(Color.parseColor("#B5189501"));
         guesserInputBox.setEnabled(false);
         hint.setText(correctGuess);
@@ -365,6 +182,7 @@ public class DrawingScreen extends BaseGameActivity {
         allToolbars.setBackgroundColor(Color.parseColor("#83AABBCC"));
 
         if (isDrawer) {
+            paintClass.clear();
             colorPalette.setColorFilter(Color.BLACK);
             paintClass.setColor(Color.BLACK);
             submitGuess.setVisibility(View.GONE);
@@ -394,20 +212,20 @@ public class DrawingScreen extends BaseGameActivity {
 
     @SuppressLint("SetTextI18n")
     private void resetClock() {
-        timeLeftTextView.setText(ROUND_TIME+ " seconds");
+        timeLeftTextView.setText(ROUND_TIME + " seconds");
         timeLeft = ROUND_TIME;
     }
 
     @SuppressLint("SetTextI18n")
     private void startCountdown() {
-        final TextView timeLeftTextView = findViewById(R.id.time_left);
+        countDownHandler.removeCallbacks(countDownUpdater);
         countDownUpdater = new Runnable() {
             @Override
             public void run() {
                 if (timeLeft > 0) {
                     timeLeftTextView.setText(timeLeft + " seconds");
                     timeLeft--;
-                    countDownHandler.postDelayed(this, 1000);
+                    countDownHandler.postDelayed(this, MILLIS_IN_SECOND);
                 } else {
                     countDownHandler.removeCallbacks(this);
                     timeLeftTextView.setText("0 seconds");
@@ -465,6 +283,15 @@ public class DrawingScreen extends BaseGameActivity {
         findViewById(R.id.open_users_side_bar).setEnabled(true);
         findViewById(R.id.exit).setEnabled(true);
     }
+
+    @SuppressLint("SetTextI18n")
+    private void onReceivedUsersUpdate(String usersJson) {
+        int selfScore = DatabaseController.getPointsByUsername(usersJson, DatabaseController.getCachedUser().getUsername());
+        updateUsersSideBar(usersJson);
+        lastUserSideBarFormat = usersJson;
+        numOfPeopleInRoom = updateUsersSideBar(usersJson);
+        currScore.setText("Your score: " + selfScore);
+    }
     
     private void setUpPaintClass() {
         paintClass = new DrawOnView(this);
@@ -475,5 +302,83 @@ public class DrawingScreen extends BaseGameActivity {
         Intent musicIntent = new Intent(this, MusicService.class);
         musicIntent.addCategory("start");
         startService(musicIntent);
+    }
+
+    private void continueNextRound(String roundWord) {
+        displayCoolDownScreen(roundWord);
+        SoundEffects.playSound(SoundEffects.next);
+    }
+
+    private void displayCoolDownScreen(String roundWord) {
+        String roundNumber = getRoundNumber();
+        countDownHandler.removeCallbacks(countDownUpdater); // stop the countdown
+        addCoolDownScreen(roundWord, roundNumber);
+        coolDownScreen.setVisibility(View.VISIBLE);
+        waitForCoolDownScreen().thenAccept(unused ->
+                runOnUiThread(this::removeCoolDownScreen));
+    }
+
+    @SuppressLint("DefaultLocale")
+    private String getRoundNumber() {
+        String roundNumber = "";
+
+        numOfGames++;
+        if (numOfGames >= numOfPeopleInRoom) {
+            numOfGames = 0;
+            currRoundNum++;
+            if (currRoundNum <= NUM_OF_ROUNDS) {
+                roundNumber = String.format("Round %d/%d\n", currRoundNum, NUM_OF_ROUNDS);
+            }
+        }
+        return roundNumber;
+    }
+
+    private CompletableFuture<Void> waitForCoolDownScreen() {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(COOL_DOWN_SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(e);
+            }
+        });
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void addCoolDownScreen(String roundWord, String roundNumber) {
+        hint.setText(roundWord);
+        wordWas.setText(roundNumber + "The word was: " + roundWord);
+        disableAllViews();
+    }
+
+    private void removeCoolDownScreen() {
+        coolDownScreen.setVisibility(View.GONE);
+        displayedDrawingForGuesser.setBackgroundColor(Color.WHITE);
+        enableAllViews();
+        resetClock();
+        startCountdown();
+        clientController.ackConfirm();
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void updateWordToDraw(String word) {
+        wordWas.setText("The word was: " + word);
+        hint.setText(word);
+    }
+
+    private void updateWrongGuess() {
+        SoundEffects.playSound(SoundEffects.wrong);
+    }
+
+    private void processAndDisplayBitmapFromServer(String initialData) {
+        String encodedBitmap = clientController.receiveAll(initialData);
+        byte[] bitmapBytes = clientController.transformToBitmap(encodedBitmap);
+        if (bitmapBytes != null) {
+            putBitmapOnImage(bitmapBytes);
+        }
+    }
+
+    private void updateClue(String clue) {
+        hint.setText(clue);
     }
 }

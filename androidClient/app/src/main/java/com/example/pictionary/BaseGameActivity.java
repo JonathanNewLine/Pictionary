@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -31,6 +30,7 @@ public abstract class BaseGameActivity extends AppCompatActivity {
     public static final int MILLIS_IN_MINUTE = 60000;
     public static final int MILLIS_IN_SECOND = 1000;
     public static final int DOUBLE_BACK_PRESS_INTERVAL = 1000;
+    public static final int COOL_DOWN_SECONDS = 3;
 
     // views
     private View usersSideBar;
@@ -58,15 +58,15 @@ public abstract class BaseGameActivity extends AppCompatActivity {
     private int backButtonCount = 0;
 
     // handler for receiving messages
-    private boolean stopListening = false;
+    private boolean continueListening = true;
     private Handler receiveMessageHandler;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getIntentData();
         clientController = ClientController.getInstance();
+        databaseController = DatabaseController.getInstance();
     }
 
     @SuppressLint("SetTextI18n")
@@ -75,6 +75,7 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         super.onStart();
         SoundEffects.init(this);
         setButtonListenersAndAdapters();
+        getIntentData();
         updateLoggedAs();
         overrideBackButton();
 
@@ -168,14 +169,18 @@ public abstract class BaseGameActivity extends AppCompatActivity {
 
     private void listenForServer() {
         Thread thread = new Thread(() -> {
-            while (!stopListening) {
+            while (continueListening) {
                 try {
-                    stopListening = clientController.processSingleResponse(receiveMessageHandler);
+                    continueListening = clientController.processSingleResponse(receiveMessageHandler);
                 } catch (Exception ignored) {
                 }
             }
         });
         thread.start();
+    }
+
+    protected void updateIsManager(boolean isManager) {
+        this.isManager = isManager;
     }
 
     public abstract Handler getMessageHandler();

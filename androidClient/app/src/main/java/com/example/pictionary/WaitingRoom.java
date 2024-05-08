@@ -39,6 +39,11 @@ public class WaitingRoom extends BaseGameActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_waiting_room);
         setButtonListeners();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         updateIsManager(isManager);
         showWinnerScreenIfAvailable();
     }
@@ -74,13 +79,11 @@ public class WaitingRoom extends BaseGameActivity {
     }
 
     private void showWinnerScreenIfAvailable() {
-        String[] winnerData = getIntent().getStringArrayExtra("winnerData");
-        if (winnerData == null) {
+        String winnerName = getIntent().getStringExtra("winnerName");
+        String winnerPoints = getIntent().getStringExtra("winnerPoints");
+        if (winnerName == null || winnerPoints == null) {
             return;
         }
-
-        String winnerName = winnerData[0];
-        String winnerPoints = winnerData[1];
         int selfPoints = getIntent().getIntExtra("selfPoints", 0);
 
         inflateWinnerScreen(winnerName, winnerPoints, selfPoints);
@@ -157,8 +160,9 @@ public class WaitingRoom extends BaseGameActivity {
         finish();
     }
 
-    private void updateIsManager(boolean isManager) {
-        this.isManager = isManager;
+    @Override
+    protected void updateIsManager(boolean isManager) {
+        super.updateIsManager(isManager);
         if (isManager) {
             startGameBtn.setVisibility(View.VISIBLE);
             startGameIcon.setVisibility(View.VISIBLE);

@@ -22,7 +22,7 @@ public abstract class BaseMainActivity extends AppCompatActivity {
     // alert constants
     public static final String HAVE_TO_CONNECT_ALERT = "You have to connect as a user first";
     public static final String EMPTY_ID_INPUT = "Id field is empty";
-    public static final String ID_DOES_NOT_EXIST = "Damn bro, real good id, shame it doesn't fucking exist";
+    public static final String ID_DOES_NOT_EXIST = "Nonexistent id";
 
     // textViews
     private TextView loggedAs;
@@ -41,7 +41,7 @@ public abstract class BaseMainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        databaseController = new DatabaseController();
+        databaseController = DatabaseController.getInstance();
     }
 
     @Override

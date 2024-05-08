@@ -91,12 +91,10 @@ public class DrawOnView extends View {
         invalidate();
     }
 
-    public void clearBoard() {
-        strokes.clear();
-        invalidate();
-    }
-
     public Bitmap getDrawingBitmap() {
+        if (getWidth() == 0 || getHeight() == 0) {
+            return null;
+        }
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         draw(canvas);

@@ -49,7 +49,7 @@ public class MainMenu extends BaseMainActivity{
         clientController.joinPrivateRoom(gameId, this::goToGameActivity);
     }
 
-    private void goToGameActivity(int gameId) {
+    private void goToGameActivity(int gameId, boolean isManager) {
         if (gameId == ClientController.ID_DOES_NOT_EXIST) {
             runOnUiThread(() -> alert(BaseMainActivity.ID_DOES_NOT_EXIST).show());
             return;
@@ -57,7 +57,7 @@ public class MainMenu extends BaseMainActivity{
         SoundEffects.playSound(SoundEffects.join_room);
         Intent intent = new Intent(MainMenu.this, WaitingRoom.class);
         intent.putExtra("gameId", gameId);
-        intent.putExtra("isManager", true);
+        intent.putExtra("isManager", isManager);
         startActivity(intent);
     }
 
