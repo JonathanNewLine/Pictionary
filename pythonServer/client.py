@@ -76,7 +76,7 @@ class ClientThread(Thread):
 
     
     def announce_is_drawing(self) -> None:
-        self.send_message("draw")
+        self.send_message("draw: " + self.current_room.get_secret_word())
 
 
     def send_guesser_guessed_correctly(self) -> None:
@@ -87,12 +87,8 @@ class ClientThread(Thread):
         self.send_message("wrong")
 
 
-    def announce_is_guessing(self, drawing_player_name: str) -> None:
-        self.send_message("guess " + drawing_player_name)
-
-    
-    def send_drawing_player_word(self) -> None:
-        self.send_message("word: " + self.current_room.get_secret_word())
+    def announce_is_guessing(self, drawing_player_name: str, secret_word: str) -> None:
+        self.send_message("guess: " + drawing_player_name + "," + self.generate_clue_for_guessers(secret_word))
 
     
     def send_statistics_to_user(self) -> None:
@@ -100,11 +96,7 @@ class ClientThread(Thread):
 
 
     def send_all_continue_next_round(self, secret_word:str) -> None:
-        self.send_all("continue " + secret_word, True)
-
-
-    def send_guessing_player_clue(self, secret_word:str) -> None:
-        self.send_message("clue: " + self.generate_clue_for_guessers(secret_word))
+        self.send_all("continue: " + secret_word, True)
 
 
     def send_all_statistics(self) -> None:
@@ -140,12 +132,8 @@ class ClientThread(Thread):
         self.send_all(composed_drawing_message, False)
 
 
-    def send_all_winner(self) -> None:
-        self.send_all(f"winner: {self.get_winner_name_and_points()}", True)
-
-
     def send_all_to_waiting_room(self) -> None:
-        self.send_all("waiting", True)
+        self.send_all(f"waiting: {self.get_winner_name_and_points()}", True)
 
     def run(self) -> None:
         # if obtaining username fails, return
@@ -283,12 +271,10 @@ class ClientThread(Thread):
 
 
     def manager_go_to_winner_screen(self) -> None:
-        self.send_all_winner()
         self.send_all_to_waiting_room()
         self.send_all_statistics()
         self.reset_game_data()
         
-
 
     def reset_game_data(self) -> None:
         self.init_all_statistics_data()
@@ -305,7 +291,6 @@ class ClientThread(Thread):
     def handle_drawing_player(self) -> None:
         round_secret_word = self.current_room.get_secret_word()
         self.announce_is_drawing()
-        self.send_drawing_player_word()
 
         self.update_drawings_at_guessers()
 
@@ -331,8 +316,7 @@ class ClientThread(Thread):
     def handle_guessing_player(self) -> None:
         drawer_name = self.current_room.get_drawing_player_name()
         secret_word = self.current_room.get_secret_word()
-        self.announce_is_guessing(drawer_name)
-        self.send_guessing_player_clue(secret_word)
+        self.announce_is_guessing(drawer_name, secret_word)
         self.process_guesses()
 
 
@@ -413,7 +397,7 @@ class ClientThread(Thread):
 
     def send_message(self, message: str) -> None:
         self.connection.send((message + "\n").encode())
-        if len(message) < 20 or "{" in message:
+        if len(message) < 30 or "{" in message:
             print(f"\n-- send: '{message}' to {self.client_info.get_name()}")
 
 
@@ -441,7 +425,7 @@ class ClientThread(Thread):
 
     def receive_message(self) -> str:
         message = self.connection.recv(BUFFER_SIZE).decode()
-        if len(message) < 20 or "{" in message:
+        if len(message) < 30 or "{" in message:
             print(f"\n-- receive: '{message}' from {self.client_info.get_name()}")
 
         if message == "":
