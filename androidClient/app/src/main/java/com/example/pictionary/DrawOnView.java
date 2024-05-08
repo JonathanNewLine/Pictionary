@@ -16,13 +16,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DrawOnView extends View {
-    private final List<PathShape> strokes = new ArrayList<>();
-    private static Paint paint;
-    private final Client client = Client.getInstance();
-    private @ColorInt int currColor = Color.BLACK;
-    private PathShape currentPath;
+    // constants
     public final static int DEFAULT_COLOR = Color.BLACK;
     public final static int STROKE_SIZE = 10;
+
+    private final List<PathShape> strokes = new ArrayList<>();
+    private static Paint paint;
+    private final ClientController clientController = ClientController.getInstance();
+    private @ColorInt int currColor = Color.BLACK;
+    private PathShape currentPath;
 
     public DrawOnView(Context context) {
         super(context);
@@ -60,7 +62,7 @@ public class DrawOnView extends View {
                 if (currentPath != null) {
                     currentPath.updatePoint(x, y);
                 }
-                client.sendBitmap(getDrawingBitmap());
+                clientController.sendBitmap(getDrawingBitmap());
                 break;
             default:
                 return false;
@@ -78,14 +80,14 @@ public class DrawOnView extends View {
     public void undo() {
         if (!strokes.isEmpty()) {
             strokes.remove(strokes.size() - 1);
-            client.sendBitmap(getDrawingBitmap());
+            clientController.sendBitmap(getDrawingBitmap());
             invalidate();
         }
     }
 
     public void clear() {
         strokes.clear();
-        client.sendBitmap(getDrawingBitmap());
+        clientController.sendBitmap(getDrawingBitmap());
         invalidate();
     }
 

@@ -1,21 +1,17 @@
 package com.example.pictionary;
 
-import androidx.activity.OnBackPressedCallback;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.graphics.BitmapFactory;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,130 +23,77 @@ import org.json.JSONObject;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 public class DrawingScreen extends BaseGameActivity {
+    // constants
     public final static int ROUND_TIME = 60;
     public final static int NUM_OF_ROUNDS = 3;
-    private DrawOnView paintClass;
-    private ImageView colorPalette;
-    private Client client;
-    private FrameLayout drawing_screen;
-    private ImageView guesserImageView;
+    public static final int DOUBLE_BACK_PRESS_INTERVAL = 1000;
+
+    // textViews
+    private TextView hint;
+    private TextView timeLeftTextView;
+    private TextView currentDrawing;
+    private TextView wordWas;
+    private TextView currScore;
+
+    // buttons
     private ImageView clearBtn;
     private ImageView undoBtn;
-    private FrameLayout mainScreen;
+    private ImageView colorPalette;
     private ImageView submitGuess;
-    private TextView wordWas;
-    private EditText guesserToolbar;
-    private TextView hint;
-    private int backButtonCount = 0;
-    private boolean isManager;
-    private int gameId;
-    private String lastUserSideBarFormat;
-    private LinearLayout allToolbars;
-    private TextView currentDrawing;
-    private TextView currScore;
-    private Intent musicIntent;
-    private ListView usersListView;
-    public static final int DOUBLE_BACK_PRESS_INTERVAL = 1000;
-    private String correctGuess;
-    private UserAdapter userAdapter;
-    private int timeLeft = ROUND_TIME;
-    private Runnable updateCountdown;
-    private final Handler handler = new Handler();
-    private TextView timeLeftTextView;
-    private int numOfPeopleInRoom;
-    private int numOfGamesUntilRound;
-    private int currRoundNum = 1;
 
+    // editTexts
+    private EditText guesserInputBox;
+    
+    // drawing screen
+    private DrawOnView paintClass;
+    private FrameLayout drawing_screen;
+    private ImageView displayedDrawingForGuesser;
+    
+    // other views
+    private FrameLayout coolDownScreen;
     private com.skydoves.colorpickerview.ColorPickerView colorPickerView;
+    private LinearLayout allToolbars;
+    
+    // countdown
+    private Runnable countDownUpdater;
+    private final Handler countDownHandler = new Handler();
+
+    // other
+    private int timeLeft = ROUND_TIME;
+    private int currRoundNum = 1;
+    private int numOfPeopleInRoom;
+    private int numOfGames;
+    private String correctGuess;
+    private String lastUserSideBarFormat;
+
 
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drawing_screen);
-
-        client = Client.getInstance();
-        isManager = getIntent().getBooleanExtra("isManager", false);
-
-        drawing_screen = findViewById(R.id.drawing_screen);
-        paintClass = new DrawOnView(this);
-        drawing_screen.addView(paintClass);
-
-        submitGuess = findViewById(R.id.submit_guess);
-        guesserImageView = findViewById(R.id.guesser_image_view);
-        clearBtn = findViewById(R.id.clear);
-        undoBtn = findViewById(R.id.undo);
-        colorPalette = findViewById(R.id.color_palette);
-        clearBtn.setOnClickListener(v -> paintClass.clear());
-        undoBtn.setOnClickListener(v -> paintClass.undo());
-        colorPalette.setOnClickListener(this::pickColor);
-        guesserToolbar = findViewById(R.id.player_guess);
-        colorPickerView = findViewById(R.id.colorPickerView);
-        mainScreen = findViewById(R.id.main_drawing_screen);
-        hint = findViewById(R.id.hint);
-        wordWas = findViewById(R.id.word_was);
-        allToolbars = findViewById(R.id.tool_bars);
-        currentDrawing = findViewById(R.id.current_drawing);
-        currScore = findViewById(R.id.current_score);
-        timeLeftTextView = findViewById(R.id.time_left);
+        setButtonListeners();
+        setUpPaintClass();
         timeLeftTextView.setText(ROUND_TIME + "seconds");
-
-        usersListView = findViewById(R.id.side_users_list_view);
-        userAdapter = new UserAdapter(this, 0, 0);
-        usersListView.setAdapter(userAdapter);
-
-        gameId = getIntent().getIntExtra("gameId", -1);
-
-        findViewById(R.id.exit).setOnClickListener(v -> exit(this, client));
-        findViewById(R.id.open_users_side_bar).setOnClickListener(v ->
-                showHideUsersSideBar(findViewById(R.id.users_side_bar)));
-
-
-        submitGuess.setOnClickListener(v -> {
-            correctGuess = guesserToolbar.getText().toString();
-            client.sendMessage(guesserToolbar.getText().toString());
-            guesserToolbar.setText("");
-        });
-
-        overrideBackButton();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
-        musicIntent = new Intent(this, MusicService.class);
-        musicIntent.addCategory("start");
-        startService(musicIntent);
-
+        startMusic();
         getInitialPlayingMode();
     }
 
-    private void overrideBackButton() {
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                if (backButtonCount >= 1) {
-                    exit(DrawingScreen.this, client);
-                }
-                else {
-                    Toast.makeText(DrawingScreen.this, "Press back again to exit", Toast.LENGTH_SHORT).show();
-                    backButtonCount++;
-                    new Handler().postDelayed(() -> backButtonCount = 0, DOUBLE_BACK_PRESS_INTERVAL);
-                }
-            }
-
-        };
-        getOnBackPressedDispatcher().addCallback(this, callback);
+    @Override
+    public void listenForServer() {
     }
 
     private void getInitialPlayingMode() {
-        client.receiveMessage().thenAccept(message -> runOnUiThread(() -> {
+        clientController.receiveMessage().thenAccept(message -> runOnUiThread(() -> {
            if (message.equals("draw")) {
-               getAppropriateInterface(true, cachedUser.getUsername());
+               getAppropriateInterface(true, DatabaseController.getCachedUser().getUsername());
                startCountdown();
                listenForServerDrawer();
            }
@@ -162,7 +105,7 @@ public class DrawingScreen extends BaseGameActivity {
            }
            else if (message.startsWith("users")) {
                lastUserSideBarFormat = message;
-               numOfPeopleInRoom = updateUsersSideBar(message, userAdapter);
+               numOfPeopleInRoom = updateUsersSideBar(message);
                getInitialPlayingMode();
            }
            else {
@@ -173,20 +116,20 @@ public class DrawingScreen extends BaseGameActivity {
 
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
     private void listenForServerDrawer() {
-        client.receiveMessage().thenAccept(message -> runOnUiThread(() -> {
+        clientController.receiveMessage().thenAccept(message -> runOnUiThread(() -> {
             if (message.equals("exit ok")) {
                 return;
             }
             else if (message.equals("alone")) {
-                client.sendMessage("alone ok");
+                clientController.sendMessage("alone ok");
             }
             else if (message.equals("manager")) {
                 isManager = true;
             }
             else if (message.startsWith("users")) {
                 lastUserSideBarFormat = message;
-                numOfPeopleInRoom = updateUsersSideBar(message, userAdapter);
-                currScore.setText("Your score: " + getPointsByUsername(message, cachedUser.getUsername()));
+                numOfPeopleInRoom = updateUsersSideBar(message);
+                currScore.setText("Your score: " + getPointsByUsername(message, DatabaseController.getCachedUser().getUsername()));
             }
             else if (message.startsWith("guess")) {
                 String drawerName = message.split("guess ")[1];
@@ -196,18 +139,18 @@ public class DrawingScreen extends BaseGameActivity {
             }
             else if (message.startsWith("continue")) {
                 String roundNumber = "";
-                numOfGamesUntilRound++;
-                if (numOfGamesUntilRound >= numOfPeopleInRoom) {
-                    numOfGamesUntilRound = 0;
+                numOfGames++;
+                if (numOfGames >= numOfPeopleInRoom) {
+                    numOfGames = 0;
                     currRoundNum++;
                     if (currRoundNum <= NUM_OF_ROUNDS) {
                         roundNumber = String.format("Round %d/%d\n", currRoundNum, NUM_OF_ROUNDS);
                     }
                 }
-                mainScreen.setVisibility(View.VISIBLE);
+                coolDownScreen.setVisibility(View.VISIBLE);
                 SoundEffects.playSound(SoundEffects.next);
                 disableAllViews();
-                handler.removeCallbacks(updateCountdown);
+                countDownHandler.removeCallbacks(countDownUpdater);
                 correctGuess = message.split("continue ")[1];
                 hint.setText(correctGuess);
                 wordWas.setText(roundNumber + "The word was: " + correctGuess);
@@ -219,12 +162,12 @@ public class DrawingScreen extends BaseGameActivity {
                         throw new IllegalStateException(e);
                     }
                 }).thenAccept(unused -> runOnUiThread(() -> {
-                    mainScreen.setVisibility(View.GONE);
+                    coolDownScreen.setVisibility(View.GONE);
                     paintClass.clearBoard();
                     enableAllViews();
                     resetClock();
                     startCountdown();
-                    client.sendMessage("continue ok");
+                    clientController.sendMessage("continue ok");
                 }));
             }
             else if (message.startsWith("winner")) {
@@ -249,9 +192,9 @@ public class DrawingScreen extends BaseGameActivity {
     }
 
     private void backToWaitingRoom(String data) {
-        client.receiveMessage().thenAccept(message -> {
+        clientController.receiveMessage().thenAccept(message -> {
             if (message.equals("waiting")) {
-                client.sendMessage("waiting ok");
+                clientController.sendMessage("waiting ok");
                 createWaitingRoomIntent(data);
                 return;
             }
@@ -265,7 +208,7 @@ public class DrawingScreen extends BaseGameActivity {
         intent.putExtra("isManager", isManager);
         intent.putExtra("gameId", gameId);
         intent.putExtra("winnerData", winnerData);
-        intent.putExtra("selfPoints", getPointsByUsername(lastUserSideBarFormat, cachedUser.getUsername()));
+        intent.putExtra("selfPoints", getPointsByUsername(lastUserSideBarFormat, DatabaseController.getCachedUser().getUsername()));
         startActivity(intent);
         finish();
     }
@@ -289,7 +232,7 @@ public class DrawingScreen extends BaseGameActivity {
 
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
     private void listenForServerNoneDrawer() {
-        client.receiveMessage().thenAccept(message -> runOnUiThread(() -> {
+        clientController.receiveMessage().thenAccept(message -> runOnUiThread(() -> {
             if (message.equals("exit ok")) {
                 return;
             }
@@ -306,23 +249,23 @@ public class DrawingScreen extends BaseGameActivity {
             }
             else if (message.startsWith("users")) {
                 lastUserSideBarFormat = message;
-                updateUsersSideBar(message, userAdapter);
-                currScore.setText("Your score: " + getPointsByUsername(message, cachedUser.getUsername()));
+                updateUsersSideBar(message);
+                currScore.setText("Your score: " + getPointsByUsername(message, DatabaseController.getCachedUser().getUsername()));
             }
             else if (message.startsWith("continue")) {
                 String roundNumber = "";
-                numOfGamesUntilRound++;
-                if (numOfGamesUntilRound >= numOfPeopleInRoom) {
-                    numOfGamesUntilRound = 0;
+                numOfGames++;
+                if (numOfGames >= numOfPeopleInRoom) {
+                    numOfGames = 0;
                     currRoundNum++;
                     if (currRoundNum <= NUM_OF_ROUNDS) {
                         roundNumber = String.format("Round %d/%d\n", currRoundNum, NUM_OF_ROUNDS);
                     }
                 }
-                mainScreen.setVisibility(View.VISIBLE);
+                coolDownScreen.setVisibility(View.VISIBLE);
                 SoundEffects.playSound(SoundEffects.next);
                 disableAllViews();
-                handler.removeCallbacks(updateCountdown);
+                countDownHandler.removeCallbacks(countDownUpdater);
                 correctGuess = message.split("continue ")[1];
                 hint.setText(correctGuess);
                 wordWas.setText(roundNumber + "The word was: " + correctGuess);
@@ -334,12 +277,12 @@ public class DrawingScreen extends BaseGameActivity {
                         throw new IllegalStateException(e);
                     }
                 }).thenAccept(unused -> runOnUiThread(() -> {
-                    mainScreen.setVisibility(View.GONE);
+                    coolDownScreen.setVisibility(View.GONE);
                     paintClass.clearBoard();
                     enableAllViews();
                     resetClock();
                     startCountdown();
-                    client.sendMessage("continue ok");
+                    clientController.sendMessage("continue ok");
                 }));
             }
             else if (message.startsWith("clue")) {
@@ -347,7 +290,7 @@ public class DrawingScreen extends BaseGameActivity {
             }
             else if (message.equals("draw")) {
                 paintClass.clear();
-                getAppropriateInterface(true, cachedUser.getUsername());
+                getAppropriateInterface(true, DatabaseController.getCachedUser().getUsername());
                 listenForServerDrawer();
                 return;
             }
@@ -360,16 +303,16 @@ public class DrawingScreen extends BaseGameActivity {
                 return;
             }
             else if (message.equals("alone")) {
-                client.sendMessage("alone ok");
+                clientController.sendMessage("alone ok");
             }
             else if (message.contains("dataBytes")){
                 String encodedBitmap;
                 try {
-                    encodedBitmap = client.receiveAll(message);
+                    encodedBitmap = clientController.receiveAll(message);
                 } catch (ExecutionException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                byte[] bitmapBytes = client.transformToBitmap(encodedBitmap);
+                byte[] bitmapBytes = clientController.transformToBitmap(encodedBitmap);
                 runOnUiThread(() -> {
                     if (bitmapBytes != null) {
                         putBitmapOnImage(bitmapBytes);
@@ -383,16 +326,16 @@ public class DrawingScreen extends BaseGameActivity {
     @SuppressLint("SetTextI18n")
     private void updateCorrectGuess() {
         allToolbars.setBackgroundColor(Color.parseColor("#B5189501"));
-        guesserToolbar.setEnabled(false);
+        guesserInputBox.setEnabled(false);
         hint.setText(correctGuess);
     }
 
     private void putBitmapOnImage(byte[] bitmapBytes) {
         Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
-        guesserImageView.setImageBitmap(bitmap);
+        displayedDrawingForGuesser.setImageBitmap(bitmap);
     }
 
-    private void pickColor(final View view) {
+    private void pickColor() {
         colorPickerView.setColorListener((ColorEnvelopeListener) (envelope, fromUser) -> {
             colorPalette.setColorFilter(envelope.getColor());
             paintClass.setColor(envelope.getColor());
@@ -416,17 +359,17 @@ public class DrawingScreen extends BaseGameActivity {
             colorPalette.setColorFilter(Color.BLACK);
             paintClass.setColor(Color.BLACK);
             submitGuess.setVisibility(View.GONE);
-            guesserImageView.setVisibility(View.GONE);
+            displayedDrawingForGuesser.setVisibility(View.GONE);
             drawerToolBar.setVisibility(View.VISIBLE);
-            guesserToolbar.setVisibility(View.GONE);
+            guesserInputBox.setVisibility(View.GONE);
             paintClass.setVisibility(View.VISIBLE);
             currentDrawing.setText("Currently drawing: " + drawerName);
         }
         else {
             submitGuess.setVisibility(View.VISIBLE);
-            guesserImageView.setVisibility(View.VISIBLE);
+            displayedDrawingForGuesser.setVisibility(View.VISIBLE);
             drawerToolBar.setVisibility(View.GONE);
-            guesserToolbar.setVisibility(View.VISIBLE);
+            guesserInputBox.setVisibility(View.VISIBLE);
             paintClass.setVisibility(View.GONE);
             currentDrawing.setText("Currently drawing: " + drawerName);
         }
@@ -435,7 +378,7 @@ public class DrawingScreen extends BaseGameActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        musicIntent = new Intent(this, MusicService.class);
+        Intent musicIntent = new Intent(this, MusicService.class);
         musicIntent.addCategory("pause");
         startService(musicIntent);
     }
@@ -449,24 +392,53 @@ public class DrawingScreen extends BaseGameActivity {
     @SuppressLint("SetTextI18n")
     private void startCountdown() {
         final TextView timeLeftTextView = findViewById(R.id.time_left);
-        updateCountdown = new Runnable() {
+        countDownUpdater = new Runnable() {
             @Override
             public void run() {
                 if (timeLeft > 0) {
                     timeLeftTextView.setText(timeLeft + " seconds");
                     timeLeft--;
-                    handler.postDelayed(this, 1000);
+                    countDownHandler.postDelayed(this, 1000);
                 } else {
-                    handler.removeCallbacks(this);
+                    countDownHandler.removeCallbacks(this);
                     timeLeftTextView.setText("0 seconds");
                 }
             }
         };
-        handler.post(updateCountdown);
+        countDownHandler.post(countDownUpdater);
+    }
+    
+    private void setButtonListeners() {
+        drawing_screen = findViewById(R.id.drawing_screen);
+        submitGuess = findViewById(R.id.submit_guess);
+        displayedDrawingForGuesser = findViewById(R.id.displayed_drawing_for_guesser);
+        clearBtn = findViewById(R.id.clear);
+        undoBtn = findViewById(R.id.undo);
+        colorPalette = findViewById(R.id.color_palette);
+        guesserInputBox = findViewById(R.id.player_guess);
+        colorPickerView = findViewById(R.id.colorPickerView);
+        coolDownScreen = findViewById(R.id.cooldown_screen);
+        hint = findViewById(R.id.hint);
+        wordWas = findViewById(R.id.word_was);
+        allToolbars = findViewById(R.id.global_toolbar);
+        currentDrawing = findViewById(R.id.current_drawing);
+        currScore = findViewById(R.id.current_score);
+        timeLeftTextView = findViewById(R.id.time_left);
+
+        clearBtn.setOnClickListener(v -> paintClass.clear());
+        undoBtn.setOnClickListener(v -> paintClass.undo());
+        colorPalette.setOnClickListener(v -> pickColor());
+        submitGuess.setOnClickListener(v -> submitGuess());
+    }
+    
+    private void submitGuess() {
+        correctGuess = guesserInputBox.getText().toString();
+        clientController.submitGuess(correctGuess);
+        guesserInputBox.setText("");
     }
 
     private void disableAllViews() {
-        guesserToolbar.setEnabled(false);
+        guesserInputBox.setEnabled(false);
         undoBtn.setEnabled(false);
         colorPalette.setEnabled(false);
         clearBtn.setEnabled(false);
@@ -476,12 +448,23 @@ public class DrawingScreen extends BaseGameActivity {
     }
 
     private void enableAllViews() {
-        guesserToolbar.setEnabled(true);
+        guesserInputBox.setEnabled(true);
         submitGuess.setEnabled(true);
         undoBtn.setEnabled(true);
         colorPalette.setEnabled(true);
         clearBtn.setEnabled(true);
         findViewById(R.id.open_users_side_bar).setEnabled(true);
         findViewById(R.id.exit).setEnabled(true);
+    }
+    
+    private void setUpPaintClass() {
+        paintClass = new DrawOnView(this);
+        drawing_screen.addView(paintClass);
+    }
+    
+    private void startMusic() {
+        Intent musicIntent = new Intent(this, MusicService.class);
+        musicIntent.addCategory("start");
+        startService(musicIntent);
     }
 }

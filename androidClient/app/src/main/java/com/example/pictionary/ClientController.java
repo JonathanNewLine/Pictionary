@@ -9,31 +9,27 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-public class Client {
+public class ClientController {
+    public final static int ID_DOES_NOT_EXIST = -1;
     public final static int PORT = 6969;
     public final static String SERVER_IP = "64.226.121.246";
     public final static int QUALITY = 40;
     private Socket socket;
     private BufferedReader input;
     private OutputStream output;
-    private static Client instance = null;
+    private static ClientController instance = null;
 
-    public Client() {
+    public ClientController() {
         instance = this;
     }
 
-    public static Client getInstance() {
+    public static ClientController getInstance() {
         if (instance == null) {
-            instance = new Client();
+            instance = new ClientController();
         }
         return instance;
     }
@@ -141,5 +137,40 @@ public class Client {
 
     public void exitRoom() {
         sendMessage("exit");
+    }
+
+    public void updateUserLoggedIn(String username) {
+        connectSocket(username);
+    }
+
+    public void updateUserLoggedOut() {
+        closeSocket();
+    }
+
+    public void createPrivateRoom(JoinRoomCallback callback) {
+        sendMessage("new room");
+        receiveMessage().thenAccept(response -> {
+            int gameId = Integer.parseInt(response);
+            callback.onRoomJoined(gameId);
+        });
+    }
+
+    public void joinPrivateRoom(int gameId, JoinRoomCallback callback) {
+        sendMessage("find room " + gameId);
+        receiveMessage().thenAccept(response -> {
+            if (response.equals("no")) {
+                callback.onRoomJoined(ID_DOES_NOT_EXIST);
+            } else if (response.equals("yes")) {
+                callback.onRoomJoined(gameId);
+            }
+        });
+    }
+
+    public void submitGuess(String guess) {
+        sendMessage(guess);
+    }
+
+    interface JoinRoomCallback {
+        void onRoomJoined(int gameId);
     }
 }

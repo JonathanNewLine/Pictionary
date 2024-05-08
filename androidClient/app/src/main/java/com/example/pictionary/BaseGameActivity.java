@@ -1,14 +1,21 @@
 package com.example.pictionary;
 
+import static com.example.pictionary.DrawingScreen.DOUBLE_BACK_PRESS_INTERVAL;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,74 +28,79 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 
-public class BaseGameActivity extends AppCompatActivity {
-    protected FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    protected static DatabaseUser cachedUser = null;
-    private FirebaseUser user;
+public abstract class BaseGameActivity extends AppCompatActivity {
+    // alert constants
+    public static final String TOO_FEW_PLAYERS_IN_ROOM = "Too few people in room, need at least two";
+    public static final String TOO_MANY_PLAYERS_IN_ROOM = "Too many people in room, can host at most six";
+
+    // constants
+    public static final int MIN_PLAYERS_IN_ROOM = 2;
+    public static final int MAX_PLAYERS_IN_ROOM = 6;
+    public static final int ONE_SECOND_IN_MILLIS = 1000;
+    public static final int MILLIS_IN_HOUR = 3600000;
+    public static final int MILLIS_IN_MINUTE = 60000;
+    public static final int MILLIS_IN_SECOND = 1000;
+
+    // views
+    private View usersSideBar;
+    private ListView usersListView;
+
+    // textViews
+    private TextView loggedAs;
+
+    // buttons
+    private ImageView exit;
+    private ImageView openUsersSideBar;
+
+    // controllers
+    protected DatabaseController databaseController;
+    protected ClientController clientController;
+
+    // adapters
+    private UserAdapter userAdapter;
+
+    // game intent data
+    protected int gameId;
+    protected boolean isManager;
+
+    // other
+    private int backButtonCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getIntentData();
+        clientController = ClientController.getInstance();
     }
 
     @SuppressLint("SetTextI18n")
     @Override
     protected void onStart() {
         super.onStart();
-
         SoundEffects.init(this);
+        setButtonListenersAndAdapters();
+        updateLoggedAs();
+        overrideBackButton();
 
-        TextView loggedAs = findViewById(R.id.logged_as_game);
-        user = mAuth.getCurrentUser();
-
-        if (user == null) {
-
-            loggedAs.setText("Logged in as:\nguest");
-        }
-
-        FirebaseFirestore database = FirebaseFirestore.getInstance();
-        CollectionReference usersTable = database.collection("users");
-        assert user != null;
-        usersTable.document(user.getUid()).get().addOnSuccessListener(documentSnapshot -> {
-            DatabaseUser databaseUser = documentSnapshot.toObject(DatabaseUser.class);
-            assert databaseUser != null;
-            cachedUser = databaseUser;
-            loggedAs.setText("Logged in as:\n" + databaseUser.getUsername());
-        });
+        listenForServer();
     }
 
-    public void addToUserStatistics(String statsJson) {
-        if (user != null) {
-            Gson gson = new Gson();
-            DatabaseUser stats = gson.fromJson(statsJson, DatabaseUser.class);
+    public void exit() {
+        clientController.exitRoom();
+        finish();
+    }
 
-            DocumentReference userDocRef = FirebaseFirestore.getInstance().collection("users").document(user.getUid());
-            userDocRef.update("guesses", cachedUser.getGuesses() + stats.getGuesses(),
-                            "correctGuesses",cachedUser.getCorrectGuesses() + stats.getCorrectGuesses(),
-                            "gamesPlayed", cachedUser.getGamesPlayed() + stats.getGamesPlayed(),
-                            "gamesWon", cachedUser.getGamesWon() + stats.getGamesWon())
-                    .addOnSuccessListener(aVoid -> Log.d("statistics", "DocumentSnapshot successfully updated!"))
-                    .addOnFailureListener(e -> Log.w("statistics", "Error updating document", e));
+    public void showHideUsersSideBar() {
+        if(usersSideBar.getVisibility() == View.VISIBLE) {
+            usersSideBar.setVisibility(View.GONE);
         } else {
-            Log.d("statistics", "No user is signed in.");
+            usersSideBar.setVisibility(View.VISIBLE);
         }
     }
 
-    public void exit(Activity activity, Client client) {
-        client.exitRoom();
-        activity.finish();
-    }
-
-    public void showHideUsersSideBar(View sideBar) {
-        if(sideBar.getVisibility() == View.VISIBLE) {
-            sideBar.setVisibility(View.GONE);
-        } else {
-            sideBar.setVisibility(View.VISIBLE);
-        }
-    }
-
-    public int updateUsersSideBar(String format, UserAdapter userAdapter) {
-        ArrayList<User> usersConnectedToRoom = getUsersList(format.split("users: ")[1]);
+    public int updateUsersSideBar(String format) {
+        String usersJson = format.split("users: ")[1];
+        ArrayList<User> usersConnectedToRoom = getUsersList(usersJson);
         userAdapter.clear();
         userAdapter.addAll(usersConnectedToRoom);
         return userAdapter.getCount();
@@ -110,4 +122,53 @@ public class BaseGameActivity extends AppCompatActivity {
         builder.setPositiveButton("Ok", null);
         return builder;
     }
+
+    private void setButtonListenersAndAdapters() {
+        loggedAs = findViewById(R.id.logged_as_game);
+        exit = findViewById(R.id.exit);
+        openUsersSideBar = findViewById(R.id.open_users_side_bar);
+        usersSideBar = findViewById(R.id.users_side_bar);
+        usersListView = findViewById(R.id.side_users_list_view);
+
+        userAdapter = new UserAdapter(this, 0, 0);
+        usersListView.setAdapter(userAdapter);
+
+        exit.setOnClickListener(v -> exit());
+        openUsersSideBar.setOnClickListener(v -> showHideUsersSideBar());
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void updateLoggedAs() {
+        String username = DatabaseController.getCachedUser().getUsername();
+        loggedAs.setText("Logged in as:\n" + username);
+    }
+
+    protected int getNumUsersInRoom() {
+        return userAdapter.getCount();
+    }
+
+    protected void getIntentData() {
+        gameId = getIntent().getIntExtra("gameId", -1);
+        isManager = getIntent().getBooleanExtra("isManager", false);
+    }
+
+    private void overrideBackButton() {
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (backButtonCount >= 1) {
+                    exit();
+                    return;
+                }
+
+                Toast.makeText(BaseGameActivity.this, "Press back again to exit", Toast.LENGTH_SHORT).show();
+                backButtonCount++;
+                new Handler().postDelayed(() -> backButtonCount = 0, DOUBLE_BACK_PRESS_INTERVAL);
+            }
+
+        };
+        getOnBackPressedDispatcher().addCallback(this, callback);
+    }
+
+    public abstract void listenForServer();
 }

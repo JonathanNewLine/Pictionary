@@ -81,14 +81,14 @@
             android:background="@color/white">
 
             <ImageView
-                android:id="@+id/guesser_image_view"
+                android:id="@+id/displayed_drawing_for_guesser"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
         </FrameLayout>
 
 
         <LinearLayout
-            android:id="@+id/tool_bars"
+            android:id="@+id/global_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#83AABBCC"
@@ -219,7 +219,7 @@
         app:palette="@drawable/color_wheel" />
 
     <FrameLayout
-        android:id="@+id/main_drawing_screen"
+        android:id="@+id/cooldown_screen"
         android:layout_width="match_parent"
         android:background="#8F000000"
         android:visibility="gone"

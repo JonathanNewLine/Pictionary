@@ -1,6 +1,5 @@
 package com.example.pictionary;
 
-import static androidx.constraintlayout.widget.ConstraintLayoutStates.TAG;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -8,53 +7,60 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 
-public class BaseMainActivity extends AppCompatActivity {
-    protected FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    private final FirebaseFirestore database = FirebaseFirestore.getInstance();
-    private final CollectionReference usersTable = database.collection("users");
-    protected static DatabaseUser cachedUser = null;
-    protected Client client;
+public abstract class BaseMainActivity extends AppCompatActivity {
+    // alert constants
+    public static final String HAVE_TO_CONNECT_ALERT = "You have to connect as a user first";
+    public static final String EMPTY_ID_INPUT = "Id field is empty";
+    public static final String ID_DOES_NOT_EXIST = "Damn bro, real good id, shame it doesn't fucking exist";
+
+    // textViews
+    private TextView loggedAs;
+
+    // buttons
+    private ImageView logOutBtn;
+    private ImageView logInBtn;
+    private ImageView exitCurrentScreen;
+    private ImageView goToStatisticsPage;
+    private ImageView goToSettingsPage;
+
+    // controllers
+    protected DatabaseController databaseController;
+    protected ClientController clientController;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        databaseController = new DatabaseController();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
+        setButtonListeners();
         SoundEffects.init(this);
 
-        findViewById(R.id.logout).setOnClickListener(v -> logoutUser());
-        findViewById(R.id.user).setOnClickListener(v -> inflateLoginDialog(this));
+        databaseController.logInWithCachedUser(new DatabaseController.LoginCallback() {
+            @Override
+            public void onLoginSuccess(DatabaseUser user) {
+                onUserLoggedIn(user);
+            }
 
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) {
-            return;
-        }
-
-        usersTable.document(user.getUid()).get().addOnSuccessListener(documentSnapshot -> {
-            DatabaseUser databaseUser = documentSnapshot.toObject(DatabaseUser.class);
-            assert databaseUser != null;
-            onUserLoggedIn(databaseUser);
+            @Override
+            public void onLoginFailure(String errorMessage) {
+            }
         });
+
     }
 
     public void inflateLoginDialog(Activity activity) {
@@ -77,58 +83,14 @@ public class BaseMainActivity extends AppCompatActivity {
         window.setAttributes(wlp);
         dialog.show();
 
-        registerLink.setOnClickListener(v -> {
-            dialog.dismiss();
-            inflateRegisterDialog(activity);
-        });
-        buttonLogin.setOnClickListener(v -> {
-            String email = editTextEmail.getText().toString();
-            String password = editTextPassword.getText().toString();
-
-            if (email.isEmpty() || password.isEmpty()) {
-                alert("All fields must be filled").show();
-                return;
-            }
-
-            login(email, password, new LoginCallback() {
-                @Override
-                public void onLoginSuccess(DatabaseUser user) {
-                    dialog.dismiss();
-                }
-
-                @Override
-                public void onLoginFailure(String errorMessage) {
-                    alert(errorMessage).show();
-                }
-            });
-        });
+        registerLink.setOnClickListener(v -> onRegisterLinkClick(dialog, activity));
+        buttonLogin.setOnClickListener(v -> onLoginButtonClick(editTextEmail, editTextPassword, dialog));
     }
 
-    public void login(String email, String password, LoginCallback callBack) {
-        mAuth.signInWithEmailAndPassword(email, password)
-            .addOnSuccessListener((Activity) this, (OnSuccessListener<? super AuthResult>) task -> {
-                Log.d(TAG, "signInWithEmail:success");
-                FirebaseUser user = mAuth.getCurrentUser();
-
-                assert user != null;
-                usersTable.document(user.getUid()).get().addOnSuccessListener(documentSnapshot -> {
-                    DatabaseUser databaseUser = documentSnapshot.toObject(DatabaseUser.class);
-                    assert databaseUser != null;
-                    onUserLoggedIn(databaseUser);
-                    callBack.onLoginSuccess(databaseUser);
-                });
-            }).addOnFailureListener(e ->
-                        callBack.onLoginFailure("Login up failed: " + e.getMessage()));
-    }
-
-    @SuppressLint("SetTextI18n")
     public void onUserLoggedIn(DatabaseUser databaseUser) {
-        client = Client.getInstance();
-        cachedUser = databaseUser;
-        findViewById(R.id.logout).setVisibility(View.VISIBLE);
-        TextView loggedAs = findViewById(R.id.logged_as_main);
-        loggedAs.setText("Logged in as:\n" + databaseUser.getUsername());
-        Client.getInstance().connectSocket(databaseUser.getUsername());
+        clientController = ClientController.getInstance();
+        clientController.updateUserLoggedIn(databaseUser.getUsername());
+        updateToLoginInterface(databaseUser.getUsername());
     }
 
     public void inflateRegisterDialog(Activity activity) {
@@ -151,82 +113,33 @@ public class BaseMainActivity extends AppCompatActivity {
         window.setAttributes(wlp);
         dialog.show();
 
-        buttonRegister.setOnClickListener(v -> {
-            String email = editTextEmail.getText().toString();
-            String password = editTextPassword.getText().toString();
-            String username = editTextUsername.getText().toString();
-
-            if (email.isEmpty() || password.isEmpty() || username.isEmpty()) {
-                alert("All fields must be filled").show();
-                return;
-            }
-
-            register(email, password, username, new RegisterCallback() {
-                @Override
-                public void onRegisterSuccess(String email, String password) {
-                    login(email, password, new LoginCallback() {
-                        @Override
-                        public void onLoginSuccess(DatabaseUser user) {
-
-                        }
-
-                        @Override
-                        public void onLoginFailure(String errorMessage) {
-
-                        }
-                    });
-                    dialog.dismiss();
-                }
-
-                @Override
-                public void onRegisterFailure(String errorMessage) {
-                    alert(errorMessage).show();
-                }
-            });
-
-        });
-    }
-
-    public void register(String email, String password, String username, RegisterCallback callback) {
-        mAuth.createUserWithEmailAndPassword(email, password)
-            .addOnSuccessListener((Activity) this, (OnSuccessListener<? super AuthResult>) task -> {
-                Log.d(TAG, "createUserWithEmail:success");
-                FirebaseUser user = mAuth.getCurrentUser();
-
-                assert user != null;
-                usersTable.document(user.getUid()).set(new DatabaseUser(email, username));
-                callback.onRegisterSuccess(email, password);
-            }).addOnFailureListener(this, e ->
-                        callback.onRegisterFailure("Sign up failed: " + e.getMessage()));
-    }
-
-    public void goToSettingsActivity(Activity activity) {
-        Intent intent = new Intent(activity, Settings.class);
-        activity.startActivity(intent);
-    }
-
-    public void logoutUser() {
-        Client.getInstance().closeSocket();
-        client = null;
-        cachedUser = null;
-        mAuth.signOut();
-        updateToLogoutInterface();
-
-        onUserLogout();
+        buttonRegister.setOnClickListener(v -> onRegisterButtonClick(editTextEmail, editTextPassword, editTextUsername, dialog));
     }
 
     public void updateToLogoutInterface() {
-        TextView loggedAs = findViewById(R.id.logged_as_main);
         loggedAs.setText("Logged in as\nguest");
-        findViewById(R.id.logout).setVisibility(View.GONE);
+        logOutBtn.setVisibility(View.GONE);
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void updateToLoginInterface(String username) {
+        loggedAs.setText("Logged in as:\n" + username);
+        logOutBtn.setVisibility(View.VISIBLE);
     }
 
     public void onUserLogout() {
-
+        clientController.updateUserLoggedOut();
+        clientController = null;
+        updateToLogoutInterface();
     }
 
     public void goToStatisticsActivity(Activity activity) {
         Intent intent = new Intent(activity, Statistics.class);
+        activity.startActivity(intent);
+    }
+
+    public void goToSettingsActivity(Activity activity) {
+        Intent intent = new Intent(activity, Settings.class);
         activity.startActivity(intent);
     }
 
@@ -237,13 +150,86 @@ public class BaseMainActivity extends AppCompatActivity {
         return builder;
     }
 
-    interface LoginCallback {
-        void onLoginSuccess(DatabaseUser user);
-        void onLoginFailure(String errorMessage);
+    private void setButtonListeners() {
+        logOutBtn = findViewById(R.id.logout);
+        logInBtn = findViewById(R.id.user);
+        loggedAs = findViewById(R.id.logged_as_main);
+        goToStatisticsPage = findViewById(R.id.statistics);
+        goToSettingsPage = findViewById(R.id.settings);
+
+        logOutBtn.setOnClickListener(v -> databaseController.logoutUser(this::onUserLogout));
+        logInBtn.setOnClickListener(v -> inflateLoginDialog(this));
+        goToStatisticsPage.setOnClickListener(v -> goToStatisticsActivity(this));
+        goToSettingsPage.setOnClickListener(v -> goToSettingsActivity(this));
+
+        if (!(this instanceof MainMenu)) {
+            exitCurrentScreen = findViewById(R.id.exit);
+            exitCurrentScreen.setOnClickListener(v -> exitToMainMenu());
+        }
+
     }
 
-    interface RegisterCallback {
-        void onRegisterSuccess(String email, String password);
-        void onRegisterFailure(String errorMessage);
+    private void onRegisterLinkClick(Dialog dialog, Activity activity) {
+        dialog.dismiss();
+        inflateRegisterDialog(activity);
+    }
+
+    private void onLoginButtonClick(EditText editTextEmail, EditText editTextPassword, Dialog dialog) {
+        String email = editTextEmail.getText().toString();
+        String password = editTextPassword.getText().toString();
+
+        if (email.isEmpty() || password.isEmpty()) {
+            alert("All fields must be filled").show();
+            return;
+        }
+
+        databaseController.logIn(email, password, this, new DatabaseController.LoginCallback() {
+            @Override
+            public void onLoginSuccess(DatabaseUser user) {
+                dialog.dismiss();
+                onUserLoggedIn(user);
+            }
+
+            @Override
+            public void onLoginFailure(String errorMessage) {
+                alert(errorMessage).show();
+            }
+        });
+    }
+
+    private void onRegisterButtonClick(EditText editTextEmail, EditText editTextPassword, EditText editTextUsername, Dialog dialog) {
+        String email = editTextEmail.getText().toString();
+        String password = editTextPassword.getText().toString();
+        String username = editTextUsername.getText().toString();
+
+        if (email.isEmpty() || password.isEmpty() || username.isEmpty()) {
+            alert("All fields must be filled").show();
+            return;
+        }
+        databaseController.register(email, password, username, this, new DatabaseController.RegisterCallback() {
+            @Override
+            public void onRegisterSuccess(String email, String password) {
+                databaseController.logIn(email, password, BaseMainActivity.this, new DatabaseController.LoginCallback() {
+                    @Override
+                    public void onLoginSuccess(DatabaseUser user) {
+                        onUserLoggedIn(user);
+                    }
+
+                    @Override
+                    public void onLoginFailure(String errorMessage) {
+                    }
+                });
+                dialog.dismiss();
+            }
+
+            @Override
+            public void onRegisterFailure(String errorMessage) {
+                alert(errorMessage).show();
+            }
+        });
+    }
+
+    public void exitToMainMenu() {
+        finish();
     }
 }
