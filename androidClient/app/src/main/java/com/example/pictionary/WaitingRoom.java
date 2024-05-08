@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -15,8 +16,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import java.util.Locale;
-import java.util.concurrent.CompletableFuture;
 
 public class WaitingRoom extends BaseGameActivity {
     // buttons
@@ -31,51 +33,44 @@ public class WaitingRoom extends BaseGameActivity {
     private final Handler timeElapsedHandler = new Handler(Looper.getMainLooper());
     private Runnable timeElapsedUpdater;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_waiting_room);
         setButtonListeners();
-        updateManagerScreen(isManager);
+        updateIsManager(isManager);
         showWinnerScreenIfAvailable();
     }
 
     @Override
-    public void listenForServer() {
-        CompletableFuture<Boolean> future = new CompletableFuture<>();
-        clientController.receiveMessage().thenAccept(response -> runOnUiThread(()->{
-            if (response.equals("start")) {
-                SoundEffects.playSound(SoundEffects.start);
-                clientController.sendMessage("start ok");
-                Intent intent = new Intent(WaitingRoom.this, DrawingScreen.class);
-                intent.putExtra("isManager", isManager);
-                intent.putExtra("gameId", gameId);
-                startActivity(intent);
-                finish();
-                future.complete(false);
-                return;
+    public Handler getMessageHandler() {
+        return new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg);
+                ClientController.MessageType type = ClientController.MessageType.values()[msg.what];
+                switch (type) {
+                    case START_GAME:
+                        goToGameScreen();
+                        break;
+                    case MANAGER:
+                        updateIsManager(true);
+                        break;
+                    case USERS:
+                        updateUsersSideBar(msg.obj.toString());
+                        break;
+                    case EXIT_OK:
+                        break;
+                    case TIME:
+                        startTimer((Long) msg.obj);
+                        break;
+                    case STATISTICS:
+                        databaseController.addToUserStatistics(msg.obj.toString());
+                        break;
+                }
             }
-            else if (response.equals("manager")) {
-                isManager = true;
-                updateManagerScreen(true);
-                clientController.sendMessage("manager ok");
-                future.complete(true);
-            }
-            else if (response.startsWith("users")) {
-                updateUsersSideBar(response);
-            }
-            else if (response.equals("exit ok")) {
-                return;
-            }
-            else if (response.startsWith("time")) {
-                long epochTime = Long.parseLong(response.split("time: ")[1]);
-                startTimer(epochTime);
-            }
-            else if(response.startsWith("statistics")) {
-                databaseController.addToUserStatistics(response.split("statistics: ")[1]);
-            }
-            listenForServer();
-        }));
+        };
     }
 
     private void showWinnerScreenIfAvailable() {
@@ -153,7 +148,17 @@ public class WaitingRoom extends BaseGameActivity {
         startActivity(shareIntent);
     }
 
-    private void updateManagerScreen(boolean isManager) {
+    private void goToGameScreen() {
+        SoundEffects.playSound(SoundEffects.start);
+        Intent intent = new Intent(WaitingRoom.this, DrawingScreen.class);
+        intent.putExtra("isManager", isManager);
+        intent.putExtra("gameId", gameId);
+        startActivity(intent);
+        finish();
+    }
+
+    private void updateIsManager(boolean isManager) {
+        this.isManager = isManager;
         if (isManager) {
             startGameBtn.setVisibility(View.VISIBLE);
             startGameIcon.setVisibility(View.VISIBLE);

@@ -1,15 +1,11 @@
 package com.example.pictionary;
 
-import static com.example.pictionary.DrawingScreen.DOUBLE_BACK_PRESS_INTERVAL;
-
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -17,12 +13,6 @@ import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -40,6 +30,7 @@ public abstract class BaseGameActivity extends AppCompatActivity {
     public static final int MILLIS_IN_HOUR = 3600000;
     public static final int MILLIS_IN_MINUTE = 60000;
     public static final int MILLIS_IN_SECOND = 1000;
+    public static final int DOUBLE_BACK_PRESS_INTERVAL = 1000;
 
     // views
     private View usersSideBar;
@@ -66,6 +57,11 @@ public abstract class BaseGameActivity extends AppCompatActivity {
     // other
     private int backButtonCount = 0;
 
+    // handler for receiving messages
+    private boolean stopListening = false;
+    private Handler receiveMessageHandler;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +78,7 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         updateLoggedAs();
         overrideBackButton();
 
+        receiveMessageHandler = getMessageHandler();
         listenForServer();
     }
 
@@ -98,8 +95,7 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         }
     }
 
-    public int updateUsersSideBar(String format) {
-        String usersJson = format.split("users: ")[1];
+    public int updateUsersSideBar(String usersJson) {
         ArrayList<User> usersConnectedToRoom = getUsersList(usersJson);
         userAdapter.clear();
         userAdapter.addAll(usersConnectedToRoom);
@@ -170,5 +166,17 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
-    public abstract void listenForServer();
+    private void listenForServer() {
+        Thread thread = new Thread(() -> {
+            while (!stopListening) {
+                try {
+                    stopListening = clientController.processSingleResponse(receiveMessageHandler);
+                } catch (Exception ignored) {
+                }
+            }
+        });
+        thread.start();
+    }
+
+    public abstract Handler getMessageHandler();
 }

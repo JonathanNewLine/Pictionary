@@ -1,6 +1,8 @@
 package com.example.pictionary;
 
 import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -12,8 +14,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClientController {
+    public enum MessageType {
+        START_GAME, MANAGER, USERS, EXIT_OK, TIME, STATISTICS, CORRECT_GUESS, DRAW, GUESS, CONTINUE,
+        WINNER, WRONG_GUESS, ALONE, WORD_TO_GUESS, CLUE, DRAWING_BYTES
+    }
     public final static int ID_DOES_NOT_EXIST = -1;
     public final static int PORT = 6969;
     public final static String SERVER_IP = "64.226.121.246";
@@ -166,11 +173,57 @@ public class ClientController {
         });
     }
 
+    public void ackStartGame() {
+        sendMessage("start ok");
+    }
+
+    public void ackManager() {
+        sendMessage("manager ok");
+    }
+
     public void submitGuess(String guess) {
         sendMessage(guess);
     }
 
-    interface JoinRoomCallback {
+    public boolean processSingleResponse(Handler receiveMessageHandler) throws ExecutionException, InterruptedException {
+        AtomicBoolean stopListening = new AtomicBoolean(false);
+        receiveMessage().thenAccept(response -> {
+            if (response.equals("start")) {
+                ackStartGame();
+                receiveMessageHandler.sendEmptyMessage(MessageType.START_GAME.ordinal());
+                stopListening.set(true);
+            }
+            else if (response.equals("manager")) {
+                ackManager();
+                receiveMessageHandler.sendEmptyMessage(MessageType.MANAGER.ordinal());
+            }
+            else if (response.startsWith("users")) {
+                Message message = new Message();
+                message.what = MessageType.USERS.ordinal();
+                message.obj = response.split("users: ")[1];
+                receiveMessageHandler.sendMessage(message);
+            }
+            else if (response.equals("exit ok")) {
+                receiveMessageHandler.sendEmptyMessage(MessageType.EXIT_OK.ordinal());
+                stopListening.set(true);
+            }
+            else if (response.startsWith("time")) {
+                Message message = new Message();
+                message.what = MessageType.TIME.ordinal();
+                message.obj = Long.parseLong(response.split("time: ")[1]);
+                receiveMessageHandler.sendMessage(message);
+            }
+            else if(response.startsWith("statistics")) {
+                Message message = new Message();
+                message.what = MessageType.STATISTICS.ordinal();
+                message.obj = response.split("statistics: ")[1];
+                receiveMessageHandler.sendMessage(message);
+            }
+        }).get();
+        return stopListening.get();
+    }
+
+    public interface JoinRoomCallback {
         void onRoomJoined(int gameId);
     }
 }

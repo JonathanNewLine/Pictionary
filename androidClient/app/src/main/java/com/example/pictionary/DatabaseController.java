@@ -97,17 +97,17 @@ public class DatabaseController {
         return cachedUser;
     }
 
-    interface LoginCallback {
+    public interface LoginCallback {
         void onLoginSuccess(DatabaseUser user);
         void onLoginFailure(String errorMessage);
     }
 
-    interface RegisterCallback {
+    public interface RegisterCallback {
         void onRegisterSuccess(String email, String password);
         void onRegisterFailure(String errorMessage);
     }
 
-    interface LogoutCallback {
+    public interface LogoutCallback {
         void onLogout();
     }
 }

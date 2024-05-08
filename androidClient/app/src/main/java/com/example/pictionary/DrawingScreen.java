@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -28,7 +29,6 @@ public class DrawingScreen extends BaseGameActivity {
     // constants
     public final static int ROUND_TIME = 60;
     public final static int NUM_OF_ROUNDS = 3;
-    public static final int DOUBLE_BACK_PRESS_INTERVAL = 1000;
 
     // textViews
     private TextView hint;
@@ -58,7 +58,7 @@ public class DrawingScreen extends BaseGameActivity {
     
     // countdown
     private Runnable countDownUpdater;
-    private final Handler countDownHandler = new Handler();
+    private final Handler countDownHandler = new Handler(Looper.getMainLooper());
 
     // other
     private int timeLeft = ROUND_TIME;
@@ -83,11 +83,20 @@ public class DrawingScreen extends BaseGameActivity {
     protected void onStart() {
         super.onStart();
         startMusic();
-        getInitialPlayingMode();
     }
 
     @Override
-    public void listenForServer() {
+    public Handler getMessageHandler() {
+        return new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(android.os.Message msg) {
+                super.handleMessage(msg);
+                ClientController.MessageType type = ClientController.MessageType.values()[msg.what];
+                switch (type) {
+
+                }
+            }
+        };
     }
 
     private void getInitialPlayingMode() {
