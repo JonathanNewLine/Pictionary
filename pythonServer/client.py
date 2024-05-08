@@ -49,9 +49,13 @@ class ClientThread(Thread):
         
         prev_manager = self.current_room.get_room_manager() # get the manager before removing the client
         self.all_rooms.remove_client(self)
-        new_client_list = self.current_room.get_client_list()
 
-        if prev_manager == self and self.all_rooms.room_exists(self.current_room.get_room_id()):
+        if not self.all_rooms.room_exists(self.current_room.get_room_id()):
+            self.current_room = Rooms.NOT_CONNECTED_TO_ROOM
+            return
+
+        new_client_list = self.current_room.get_client_list()
+        if prev_manager == self:
             new_client_list[0].set_new_manager()
 
         # if the only one left in the game, send alone message
