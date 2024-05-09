@@ -10,6 +10,7 @@ public class MainMenu extends BaseMainActivity{
     // buttons
     private Button createPrivateRoom;
     private ImageView search;
+    private Button search2;
     private ImageView statistics;
     private ImageView settings;
 
@@ -80,10 +81,12 @@ public class MainMenu extends BaseMainActivity{
         search = findViewById(R.id.search);
         statistics = findViewById(R.id.statistics);
         settings = findViewById(R.id.settings);
+        search2 = findViewById(R.id.search2);
         searchGameId = findViewById(R.id.search_game_id);
 
         createPrivateRoom.setOnClickListener(v -> createPrivateRoom());
         search.setOnClickListener(v -> joinPrivateRoom());
+        search2.setOnClickListener(v -> joinPrivateRoom());
         statistics.setOnClickListener(v -> goToStatisticsActivity(this));
         settings.setOnClickListener(v -> goToSettingsActivity(this));
     }
