@@ -40,6 +40,8 @@ public class DrawingScreen extends BaseGameActivity {
     private ImageView undoBtn;
     private ImageView colorPalette;
     private ImageView submitGuess;
+    private ImageView exit;
+    private ImageView openUsersSideBar;
 
     // editTexts
     private EditText guesserInputBox;
@@ -53,6 +55,7 @@ public class DrawingScreen extends BaseGameActivity {
     private FrameLayout coolDownScreen;
     private com.skydoves.colorpickerview.ColorPickerView colorPickerView;
     private LinearLayout allToolbars;
+    private View drawerToolBar;
     
     // countdown
     private Runnable countDownUpdater;
@@ -159,6 +162,7 @@ public class DrawingScreen extends BaseGameActivity {
     private void putBitmapOnImage(byte[] bitmapBytes) {
         Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
         displayedDrawingForGuesser.setImageBitmap(bitmap);
+        displayedDrawingForGuesser.setVisibility(View.VISIBLE);
     }
 
     private void pickColor() {
@@ -177,8 +181,6 @@ public class DrawingScreen extends BaseGameActivity {
 
     @SuppressLint("SetTextI18n")
     private void getAppropriateInterface(boolean isDrawer, String drawerName) {
-        View drawerToolBar = findViewById(R.id.drawer_tool_bar);
-
         allToolbars.setBackgroundColor(Color.parseColor("#83AABBCC"));
 
         if (isDrawer) {
@@ -194,7 +196,6 @@ public class DrawingScreen extends BaseGameActivity {
         }
         else {
             submitGuess.setVisibility(View.VISIBLE);
-            displayedDrawingForGuesser.setVisibility(View.VISIBLE);
             drawerToolBar.setVisibility(View.GONE);
             guesserInputBox.setVisibility(View.VISIBLE);
             paintClass.setVisibility(View.GONE);
@@ -251,6 +252,9 @@ public class DrawingScreen extends BaseGameActivity {
         currentDrawing = findViewById(R.id.current_drawing);
         currScore = findViewById(R.id.current_score);
         timeLeftTextView = findViewById(R.id.time_left);
+        drawerToolBar = findViewById(R.id.drawer_tool_bar);
+        exit = findViewById(R.id.exit);
+        openUsersSideBar = findViewById(R.id.open_users_side_bar);
 
         clearBtn.setOnClickListener(v -> paintClass.clear());
         undoBtn.setOnClickListener(v -> paintClass.undo());
@@ -269,9 +273,10 @@ public class DrawingScreen extends BaseGameActivity {
         undoBtn.setEnabled(false);
         colorPalette.setEnabled(false);
         clearBtn.setEnabled(false);
-        findViewById(R.id.open_users_side_bar).setEnabled(false);
+        openUsersSideBar.setEnabled(false);
         submitGuess.setEnabled(false);
-        findViewById(R.id.exit).setEnabled(false);
+        exit.setEnabled(false);
+        paintClass.setDrawingEnabled(false);
     }
 
     private void enableAllViews() {
@@ -280,8 +285,9 @@ public class DrawingScreen extends BaseGameActivity {
         undoBtn.setEnabled(true);
         colorPalette.setEnabled(true);
         clearBtn.setEnabled(true);
-        findViewById(R.id.open_users_side_bar).setEnabled(true);
-        findViewById(R.id.exit).setEnabled(true);
+        openUsersSideBar.setEnabled(true);
+        exit.setEnabled(true);
+        paintClass.setDrawingEnabled(true);
     }
 
     @SuppressLint("SetTextI18n")

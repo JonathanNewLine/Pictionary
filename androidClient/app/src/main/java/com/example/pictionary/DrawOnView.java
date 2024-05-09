@@ -25,6 +25,12 @@ public class DrawOnView extends View {
     private final ClientController clientController = ClientController.getInstance();
     private @ColorInt int currColor = Color.BLACK;
     private PathShape currentPath;
+    private boolean isDrawingEnabled = true;
+
+
+    public void setDrawingEnabled(boolean isDrawingEnabled) {
+        this.isDrawingEnabled = isDrawingEnabled;
+    }
 
     public DrawOnView(Context context) {
         super(context);
@@ -45,6 +51,10 @@ public class DrawOnView extends View {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (!isDrawingEnabled) {
+            return false;
+        }
+
         float x = event.getX();
         float y = event.getY();
 

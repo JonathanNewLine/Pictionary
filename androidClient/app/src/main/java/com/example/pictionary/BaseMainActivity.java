@@ -38,6 +38,9 @@ public abstract class BaseMainActivity extends AppCompatActivity {
     protected DatabaseController databaseController;
     protected ClientController clientController;
 
+    // other
+    private boolean isOnStartCalled = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +50,9 @@ public abstract class BaseMainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        if (isOnStartCalled) {
+            return;
+        }
         setButtonListeners();
         SoundEffects.init(this);
 
@@ -60,7 +66,7 @@ public abstract class BaseMainActivity extends AppCompatActivity {
             public void onLoginFailure(String errorMessage) {
             }
         });
-
+        isOnStartCalled = true;
     }
 
     public void inflateLoginDialog(Activity activity) {

@@ -56,6 +56,7 @@ public abstract class BaseGameActivity extends AppCompatActivity {
 
     // other
     private int backButtonCount = 0;
+    private boolean isOnStartCalled = false;
 
     // handler for receiving messages
     private boolean continueListening = true;
@@ -73,6 +74,9 @@ public abstract class BaseGameActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        if (isOnStartCalled) {
+            return;
+        }
         SoundEffects.init(this);
         setButtonListenersAndAdapters();
         getIntentData();
@@ -81,6 +85,7 @@ public abstract class BaseGameActivity extends AppCompatActivity {
 
         receiveMessageHandler = getMessageHandler();
         listenForServer();
+        isOnStartCalled = true;
     }
 
     public void exit() {
