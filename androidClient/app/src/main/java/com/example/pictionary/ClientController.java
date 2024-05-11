@@ -61,6 +61,7 @@ public class ClientController {
     }
 
     public void sendMessage(String message) {
+        System.out.println("Sending message: " + message);
         CompletableFuture.runAsync(() -> {
             try {
                 output.write(message.getBytes(StandardCharsets.UTF_8));
@@ -127,8 +128,8 @@ public class ClientController {
         }).thenAccept(unused -> sendMessage(username));
     }
 
-    public void closeSocket() {
-        CompletableFuture.runAsync(() -> {
+    public CompletableFuture<Void> closeSocket() {
+        return CompletableFuture.runAsync(() -> {
             try {
                 if (input != null) {
                     input.close();
@@ -159,7 +160,10 @@ public class ClientController {
     }
 
     public void updateUserLoggedOut() {
-        closeSocket();
+        try {
+            closeSocket().get();
+        } catch (ExecutionException|InterruptedException ignored) {
+        }
     }
 
     public void createPrivateRoom(JoinRoomCallback callback) {

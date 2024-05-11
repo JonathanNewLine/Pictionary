@@ -49,13 +49,25 @@
         android:background="#9CA1A6"
         android:gravity="center_vertical"/>
 
+    <EditText
+        android:id="@+id/confirm_password_register"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Confirm Password"
+        android:paddingLeft="10dp"
+        android:inputType="textPassword"
+        android:layout_below="@id/password_register"
+        android:layout_marginTop="15dp"
+        android:background="#9CA1A6"
+        android:gravity="center_vertical"/>
+
     <Button
         android:id="@+id/register_button"
         android:layout_width="382dp"
         android:layout_height="68dp"
-        android:layout_below="@+id/password_register"
+        android:layout_below="@+id/confirm_password_register"
+        android:layout_marginTop="10dp"
         android:backgroundTint="@color/black"
-        android:layout_marginTop="15dp"
         android:text="Sign up"
         android:textColor="#FFFFFF" />
 

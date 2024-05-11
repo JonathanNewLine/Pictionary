@@ -94,6 +94,9 @@ public abstract class BaseMainActivity extends AppCompatActivity {
     }
 
     public void onUserLoggedIn(DatabaseUser databaseUser) {
+        if (clientController != null) {
+            clientController.updateUserLoggedOut();
+        }
         clientController = ClientController.getInstance();
         clientController.updateUserLoggedIn(databaseUser.getUsername());
         updateToLoginInterface(databaseUser.getUsername());
@@ -108,6 +111,7 @@ public abstract class BaseMainActivity extends AppCompatActivity {
         EditText editTextUsername = dialogView.findViewById(R.id.username_register);
         EditText editTextPassword = dialogView.findViewById(R.id.password_register);
         EditText editTextEmail = dialogView.findViewById(R.id.email_register);
+        EditText editTextConfirmPassword = dialogView.findViewById(R.id.confirm_password_register);
         Button buttonRegister = dialogView.findViewById(R.id.register_button);
 
         Dialog dialog = dialogBuilder.create();
@@ -119,7 +123,7 @@ public abstract class BaseMainActivity extends AppCompatActivity {
         window.setAttributes(wlp);
         dialog.show();
 
-        buttonRegister.setOnClickListener(v -> onRegisterButtonClick(editTextEmail, editTextPassword, editTextUsername, dialog));
+        buttonRegister.setOnClickListener(v -> onRegisterButtonClick(editTextEmail, editTextPassword, editTextUsername, editTextConfirmPassword, dialog));
     }
 
     public void updateToLogoutInterface() {
@@ -203,16 +207,17 @@ public abstract class BaseMainActivity extends AppCompatActivity {
         });
     }
 
-    private void onRegisterButtonClick(EditText editTextEmail, EditText editTextPassword, EditText editTextUsername, Dialog dialog) {
+    private void onRegisterButtonClick(EditText editTextEmail, EditText editTextPassword, EditText editTextUsername, EditText editTextConfirmPassword, Dialog dialog) {
         String email = editTextEmail.getText().toString();
         String password = editTextPassword.getText().toString();
         String username = editTextUsername.getText().toString();
+        String confirmPassword = editTextConfirmPassword.getText().toString();
 
         if (email.isEmpty() || password.isEmpty() || username.isEmpty()) {
             alert("All fields must be filled").show();
             return;
         }
-        databaseController.register(email, password, username, this, new DatabaseController.RegisterCallback() {
+        databaseController.register(email, password, confirmPassword, username, this, new DatabaseController.RegisterCallback() {
             @Override
             public void onRegisterSuccess(String email, String password) {
                 databaseController.logIn(email, password, BaseMainActivity.this, new DatabaseController.LoginCallback() {
