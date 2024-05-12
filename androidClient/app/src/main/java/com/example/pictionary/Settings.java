@@ -5,13 +5,18 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.SeekBar;
 
+/**
+ * This class represents the settings screen of the application.
+ */
 public class Settings extends BaseMainActivity {
-    // seekbars
+    /** seekbars */
     private SeekBar musicSeekBar;
     private SeekBar sfxSeekBar;
 
-    // volumes
+    /** volumes */
+    // volume for music
     private int musicVolume;
+    // volume for sound effects
     private int soundEffectsVolume;
 
     @Override
@@ -20,8 +25,10 @@ public class Settings extends BaseMainActivity {
         setContentView(R.layout.activity_settings);
         getViewsById();
 
+        // load the volume settings
         loadVolumeSettings();
 
+        // set the seekbar listeners
         musicSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -39,6 +46,7 @@ public class Settings extends BaseMainActivity {
             }
         });
 
+        // set the seekbar listeners
         sfxSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -57,6 +65,9 @@ public class Settings extends BaseMainActivity {
         });
     }
 
+    /**
+     * Loads the volume settings from the shared preferences.
+     */
     private void loadVolumeSettings() {
         SharedPreferences sharedPreferences = getSharedPreferences("AppSettings", MODE_PRIVATE);
         musicVolume = sharedPreferences.getInt("musicVolume", 50);
@@ -65,11 +76,18 @@ public class Settings extends BaseMainActivity {
         sfxSeekBar.setProgress(soundEffectsVolume);
     }
 
+    /**
+     * Gets the views by their ID.
+     */
     private void getViewsById() {
         musicSeekBar = findViewById(R.id.music_seekbar);
         sfxSeekBar = findViewById(R.id.sound_effects_seekbar);
     }
 
+    /**
+     * Updates the music volume in the shared preferences.
+     * @param progress The new volume, as a percentage.
+     */
     private void updateMusicVolume(int progress) {
         SharedPreferences sharedPreferences = getSharedPreferences("AppSettings", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -77,6 +95,10 @@ public class Settings extends BaseMainActivity {
         editor.apply();
     }
 
+    /**
+     * Updates the sound effects volume in the shared preferences and in the SoundEffects class.
+     * @param progress The new volume, as a percentage.
+     */
     private void updateSoundEffectsVolume(int progress) {
         SharedPreferences sharedPreferences = getSharedPreferences("AppSettings", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -86,12 +108,20 @@ public class Settings extends BaseMainActivity {
         SoundEffects.updateVolume(progress);
     }
 
+    /**
+     * Navigates to the settings activity.
+     * @param activity The current activity.
+     */
     @Override
     public void goToSettingsActivity(Activity activity) {
         super.goToSettingsActivity(activity);
         finish();
     }
 
+    /**
+     * Navigates to the statistics activity.
+     * @param activity The current activity.
+     */
     @Override
     public void goToStatisticsActivity(Activity activity) {
         super.goToStatisticsActivity(activity);

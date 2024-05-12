@@ -15,9 +15,14 @@ import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class represents a custom View that allows the user to draw on it.
+ */
 public class DrawOnView extends View {
-    // constants
+    /** constants */
+    // starting color
     public final static int DEFAULT_COLOR = Color.BLACK;
+    // size of brush
     public final static int STROKE_SIZE = 10;
 
     private final List<PathShape> strokes = new ArrayList<>();
@@ -27,11 +32,18 @@ public class DrawOnView extends View {
     private PathShape currentPath;
     private boolean isDrawingEnabled = true;
 
-
+    /**
+     * Sets whether drawing is enabled on this view.
+     * @param isDrawingEnabled Whether drawing is enabled.
+     */
     public void setDrawingEnabled(boolean isDrawingEnabled) {
         this.isDrawingEnabled = isDrawingEnabled;
     }
 
+    /**
+     * Constructor for the DrawOnView class.
+     * @param context The current context.
+     */
     public DrawOnView(Context context) {
         super(context);
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -40,6 +52,10 @@ public class DrawOnView extends View {
         paint.setStrokeWidth(STROKE_SIZE);
     }
 
+    /**
+     * Called when the view should render its content.
+     * @param canvas The canvas on which to draw.
+     */
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
@@ -48,6 +64,11 @@ public class DrawOnView extends View {
         }
     }
 
+    /**
+     * Called when a touch event is dispatched to this view.
+     * @param event The motion event.
+     * @return True if the event was handled, false otherwise.
+     */
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -55,23 +76,28 @@ public class DrawOnView extends View {
             return false;
         }
 
+        // get the x and y coordinates of the touch event
         float x = event.getX();
         float y = event.getY();
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                // create a new path shape and add it to the list of strokes
                 currentPath = new PathShape(x, y, currColor);
                 strokes.add(currentPath);
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (currentPath != null) {
+                    // update the last path shape with the new point
                     currentPath.updatePoint(x, y);
                 }
                 break;
             case MotionEvent.ACTION_UP:
+                // update the last path shape with the new point
                 if (currentPath != null) {
                     currentPath.updatePoint(x, y);
                 }
+                // send the whole drawing to the server
                 clientController.sendBitmap(getDrawingBitmap());
                 break;
             default:
@@ -81,12 +107,18 @@ public class DrawOnView extends View {
         return true;
     }
 
-
+    /**
+     * Sets the color of the paint used to draw.
+     * @param color The new color.
+     */
     public void setColor(int color) {
         paint.setColor(color);
         currColor = color;
     }
 
+    /**
+     * Removes the last stroke from the list of strokes and updates the server.
+     */
     public void undo() {
         if (!strokes.isEmpty()) {
             strokes.remove(strokes.size() - 1);
@@ -95,12 +127,19 @@ public class DrawOnView extends View {
         }
     }
 
+    /**
+     * Clears all strokes from the list of strokes and updates the server.
+     */
     public void clear() {
         strokes.clear();
         clientController.sendBitmap(getDrawingBitmap());
         invalidate();
     }
 
+    /**
+     * Returns a bitmap representation of the current drawing.
+     * @return The bitmap representation of the current drawing.
+     */
     public Bitmap getDrawingBitmap() {
         if (getWidth() == 0 || getHeight() == 0) {
             return null;

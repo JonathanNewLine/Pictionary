@@ -20,17 +20,26 @@ import androidx.annotation.NonNull;
 
 import java.util.Locale;
 
+/**
+ * This class represents the waiting room screen of the application.
+ */
 public class WaitingRoom extends BaseGameActivity {
-    // buttons
+    /** buttons */
+    // start game button
     private Button startGameBtn;
+    // start game button icon
     private ImageView startGameIcon;
+    // invite friends button
     private Button inviteFriendsBtn;
 
-    // textViews
+    /** textViews */
+    // elapsed time text
     private TextView elapsedTimeTextView;
 
-    // time elapsed
+    /** handler */
+    // handler for updating the elapsed time
     private final Handler timeElapsedHandler = new Handler(Looper.getMainLooper());
+    // updater for the elapsed time
     private Runnable timeElapsedUpdater;
 
 
@@ -41,13 +50,20 @@ public class WaitingRoom extends BaseGameActivity {
         setButtonListeners();
     }
 
+
     @Override
     protected void onStart() {
         super.onStart();
+        // update if the user is the manager
         updateIsManager(isManager);
+        // if available, show the winner screen
         showWinnerScreenIfAvailable();
     }
 
+    /**
+     * Returns a Handler that will be used to process messages sent from the client controller.
+     * @return The Handler that will be used to process messages sent from the client controller.
+     */
     @Override
     public Handler getMessageHandler() {
         return new Handler(Looper.getMainLooper()) {
@@ -78,6 +94,9 @@ public class WaitingRoom extends BaseGameActivity {
         };
     }
 
+    /**
+     * If available, shows the winner screen.
+     */
     private void showWinnerScreenIfAvailable() {
         String winnerName = getIntent().getStringExtra("winnerName");
         String winnerPoints = getIntent().getStringExtra("winnerPoints");
@@ -89,6 +108,12 @@ public class WaitingRoom extends BaseGameActivity {
         inflateWinnerScreen(winnerName, winnerPoints, selfPoints);
     }
 
+    /**
+     * Inflates the winner screen.
+     * @param winnerName The name of the winner.
+     * @param winnerPoints The points of the winner.
+     * @param selfPoints The points of the self.
+     */
     @SuppressLint("SetTextI18n")
     private void inflateWinnerScreen(String winnerName, String winnerPoints, int selfPoints) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
@@ -118,6 +143,9 @@ public class WaitingRoom extends BaseGameActivity {
         SoundEffects.playSound(SoundEffects.winner);
     }
 
+    /**
+     * Inflates the invitation dialog.
+     */
     @SuppressLint("SetTextI18n")
     private void inflateInvitationDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
@@ -141,6 +169,9 @@ public class WaitingRoom extends BaseGameActivity {
         sendInviteBtn.setOnClickListener(v -> sendGameInvite());
     }
 
+    /**
+     * Sends a game invite.
+     */
     private void sendGameInvite() {
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
@@ -151,6 +182,9 @@ public class WaitingRoom extends BaseGameActivity {
         startActivity(shareIntent);
     }
 
+    /**
+     * Goes to the game screen.
+     */
     private void goToGameScreen() {
         SoundEffects.playSound(SoundEffects.start);
         Intent intent = new Intent(WaitingRoom.this, DrawingScreen.class);
@@ -160,6 +194,10 @@ public class WaitingRoom extends BaseGameActivity {
         finish();
     }
 
+    /**
+     * Updates if the user is the manager.
+     * @param isManager If the user is the manager.
+     */
     @Override
     protected void updateIsManager(boolean isManager) {
         super.updateIsManager(isManager);
@@ -173,7 +211,10 @@ public class WaitingRoom extends BaseGameActivity {
         }
     }
 
-
+    /**
+     * Starts the timer.
+     * @param startTime The start time.
+     */
     private void startTimer(long startTime) {
         // setup the timer
         timeElapsedUpdater = new Runnable() {
@@ -188,7 +229,10 @@ public class WaitingRoom extends BaseGameActivity {
         timeElapsedHandler.post(timeElapsedUpdater);
     }
 
-
+    /**
+     * Updates the elapsed time.
+     * @param elapsedTime The elapsed time.
+     */
     @SuppressLint("SetTextI18n")
     private void updateElapsedTime(long elapsedTime) {
         if (elapsedTime <= 0) {
@@ -203,9 +247,13 @@ public class WaitingRoom extends BaseGameActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // stop the timer handler
         timeElapsedHandler.removeCallbacks(timeElapsedUpdater);
     }
 
+    /**
+     * Starts the game.
+     */
     private void startGame() {
         if (getNumUsersInRoom() < MIN_PLAYERS_IN_ROOM) {
             alert(TOO_FEW_PLAYERS_IN_ROOM).show();
@@ -218,6 +266,9 @@ public class WaitingRoom extends BaseGameActivity {
         clientController.startGame();
     }
 
+    /**
+     * Sets the button listeners.
+     */
     private void setButtonListeners() {
         startGameBtn = findViewById(R.id.start_game);
         startGameIcon = findViewById(R.id.start_game_icon);

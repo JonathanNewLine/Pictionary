@@ -17,50 +17,68 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 
+/**
+ * This abstract class represents the base game activity of the application.
+ */
 public abstract class BaseGameActivity extends AppCompatActivity {
-    // alert constants
+    /** error messages */
     public static final String TOO_FEW_PLAYERS_IN_ROOM = "Too few people in room, need at least two";
     public static final String TOO_MANY_PLAYERS_IN_ROOM = "Too many people in room, can host at most six";
 
-    // constants
+    /** constants */
+    // min and max players in room
     public static final int MIN_PLAYERS_IN_ROOM = 2;
     public static final int MAX_PLAYERS_IN_ROOM = 6;
+    // time constants
     public static final int ONE_SECOND_IN_MILLIS = 1000;
     public static final int MILLIS_IN_HOUR = 3600000;
     public static final int MILLIS_IN_MINUTE = 60000;
     public static final int MILLIS_IN_SECOND = 1000;
+    // back button constants
     public static final int DOUBLE_BACK_PRESS_INTERVAL = 1000;
     public static final int COOL_DOWN_SECONDS = 3;
 
-    // views
+    /** side bar of users */
     private View usersSideBar;
     private ListView usersListView;
 
-    // textViews
+    /** textViews */
+    // logged in as
     private TextView loggedAs;
 
-    // buttons
+    /** buttons */
+    // exit button
     private ImageView exit;
+    // open users side bar button
     private ImageView openUsersSideBar;
 
-    // controllers
+    /** controllers */
+    // database controller
     protected DatabaseController databaseController;
+    // client controller
     protected ClientController clientController;
 
-    // adapters
+    /** adapters */
+    // adapter for users
     private UserAdapter userAdapter;
 
-    // game intent data
+    /** game intent data */
+    // game id
     protected int gameId;
+    // is manager
     protected boolean isManager;
 
-    // other
-    private int backButtonCount = 0;
-    private boolean isOnStartCalled = false;
-
+    /** handlers */
     // handler for receiving messages
-    private boolean continueListening = true;
     private Handler receiveMessageHandler;
+
+    /** other */
+    // back button count
+    private int backButtonCount = 0;
+    // flag to check if onStart is called already
+    private boolean isOnStartCalled = false;
+    // flag to continue listening
+    private boolean continueListening = true;
 
 
     @Override
@@ -70,29 +88,40 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         databaseController = DatabaseController.getInstance();
     }
 
+
     @SuppressLint("SetTextI18n")
     @Override
     protected void onStart() {
         super.onStart();
+        // check if onStart is called already
         if (isOnStartCalled) {
             return;
         }
+        // initialize everything
         SoundEffects.init(this);
         setButtonListenersAndAdapters();
         getIntentData();
         updateLoggedAs();
         overrideBackButton();
 
+        // get message handler
         receiveMessageHandler = getMessageHandler();
         listenForServer();
+
         isOnStartCalled = true;
     }
 
+    /**
+     * Exits the current room and finishes the activity.
+     */
     public void exit() {
         clientController.exitRoom();
         finish();
     }
 
+    /**
+     * Shows or hides the users side bar.
+     */
     public void showHideUsersSideBar() {
         if(usersSideBar.getVisibility() == View.VISIBLE) {
             usersSideBar.setVisibility(View.GONE);
@@ -101,6 +130,11 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Updates the users side bar with the given users JSON.
+     * @param usersJson The JSON string of the users.
+     * @return The count of the users.
+     */
     public int updateUsersSideBar(String usersJson) {
         ArrayList<User> usersConnectedToRoom = getUsersList(usersJson);
         userAdapter.clear();
@@ -108,6 +142,11 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         return userAdapter.getCount();
     }
 
+    /**
+     * Gets the list of users from the given message.
+     * @param message The message containing the users.
+     * @return The list of users.
+     */
     private ArrayList<User> getUsersList(String message) {
         ArrayList<User> connectedUsers = new ArrayList<>();
         Gson gson = new Gson();
@@ -118,6 +157,11 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         return connectedUsers;
     }
 
+    /**
+     * Creates an alert with the given message.
+     * @param message The message of the alert.
+     * @return The alert builder.
+     */
     public AlertDialog.Builder alert(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(message);
@@ -125,6 +169,9 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         return builder;
     }
 
+    /**
+     * Sets the button listeners and adapters.
+     */
     private void setButtonListenersAndAdapters() {
         loggedAs = findViewById(R.id.logged_as_game);
         exit = findViewById(R.id.exit);
@@ -139,23 +186,37 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         openUsersSideBar.setOnClickListener(v -> showHideUsersSideBar());
     }
 
+    /**
+     * Updates the logged as text view.
+     */
     @SuppressLint("SetTextI18n")
     private void updateLoggedAs() {
         String username = DatabaseController.getCachedUser().getUsername();
         loggedAs.setText("Logged in as:\n" + username);
     }
 
+    /**
+     * Gets the number of users in the room.
+     * @return The number of users in the room.
+     */
     protected int getNumUsersInRoom() {
         return userAdapter.getCount();
     }
 
+    /**
+     * Gets the intent data.
+     */
     protected void getIntentData() {
         gameId = getIntent().getIntExtra("gameId", -1);
         isManager = getIntent().getBooleanExtra("isManager", false);
     }
 
+    /**
+     * Overrides the back button.
+     */
     private void overrideBackButton() {
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            // if the back button is pressed twice within the DOUBLE_BACK_PRESS_INTERVAL time, exit the activity
             @Override
             public void handleOnBackPressed() {
                 if (backButtonCount >= 1) {
@@ -165,6 +226,7 @@ public abstract class BaseGameActivity extends AppCompatActivity {
 
                 Toast.makeText(BaseGameActivity.this, "Press back again to exit", Toast.LENGTH_SHORT).show();
                 backButtonCount++;
+                // reset the back button count after DOUBLE_BACK_PRESS_INTERVAL time
                 new Handler().postDelayed(() -> backButtonCount = 0, DOUBLE_BACK_PRESS_INTERVAL);
             }
 
@@ -172,6 +234,9 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
+    /**
+     * Listens for the server.
+     */
     private void listenForServer() {
         Thread thread = new Thread(() -> {
             while (continueListening) {
@@ -184,9 +249,17 @@ public abstract class BaseGameActivity extends AppCompatActivity {
         thread.start();
     }
 
+    /**
+     * Updates the manager status.
+     * @param isManager The manager status.
+     */
     protected void updateIsManager(boolean isManager) {
         this.isManager = isManager;
     }
 
+    /**
+     * Gets the message handler.
+     * @return The message handler.
+     */
     public abstract Handler getMessageHandler();
 }

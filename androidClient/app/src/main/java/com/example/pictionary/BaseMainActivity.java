@@ -18,27 +18,39 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ * This abstract class represents the base main activity of the application.
+ */
 public abstract class BaseMainActivity extends AppCompatActivity {
-    // alert constants
+    /** error messages */
     public static final String HAVE_TO_CONNECT_ALERT = "You have to connect as a user first";
     public static final String EMPTY_ID_INPUT = "Id field is empty";
     public static final String ID_DOES_NOT_EXIST = "Nonexistent id";
 
-    // textViews
+    /** textViews */
+    // logged in as
     private TextView loggedAs;
 
-    // buttons
+    /** buttons */
+    // log out button
     private ImageView logOutBtn;
+    // log in button
     private ImageView logInBtn;
+    // exit current screen button
     private ImageView exitCurrentScreen;
+    // go to statistics page button
     private ImageView goToStatisticsPage;
+    // go to settings page button
     private ImageView goToSettingsPage;
 
-    // controllers
+    /** controllers */
+    // database
     protected DatabaseController databaseController;
+    // client controller
     protected ClientController clientController;
 
-    // other
+    /** other */
+    // flag to check if onStart is called already
     private boolean isOnStartCalled = false;
 
     @Override
@@ -50,12 +62,15 @@ public abstract class BaseMainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        // if onStart is called already, return
         if (isOnStartCalled) {
             return;
         }
+        // setup button and sound effects
         setButtonListeners();
         SoundEffects.init(this);
 
+        // log in with cached user
         databaseController.logInWithCachedUser(new DatabaseController.LoginCallback() {
             @Override
             public void onLoginSuccess(DatabaseUser user) {
@@ -66,9 +81,14 @@ public abstract class BaseMainActivity extends AppCompatActivity {
             public void onLoginFailure(String errorMessage) {
             }
         });
+
         isOnStartCalled = true;
     }
 
+    /**
+     * Inflates the login dialog.
+     * @param activity The activity where the dialog is to be inflated.
+     */
     public void inflateLoginDialog(Activity activity) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
         View dialogView = activity.getLayoutInflater().inflate(R.layout.login, null);
@@ -93,6 +113,10 @@ public abstract class BaseMainActivity extends AppCompatActivity {
         buttonLogin.setOnClickListener(v -> onLoginButtonClick(editTextEmail, editTextPassword, dialog));
     }
 
+    /**
+     * Handles the event when a user logs in.
+     * @param databaseUser The user who logged in.
+     */
     public void onUserLoggedIn(DatabaseUser databaseUser) {
         if (clientController != null) {
             clientController.updateUserLoggedOut();
@@ -102,6 +126,10 @@ public abstract class BaseMainActivity extends AppCompatActivity {
         updateToLoginInterface(databaseUser.getUsername());
     }
 
+    /**
+     * Inflates the register dialog.
+     * @param activity The activity where the dialog is to be inflated.
+     */
     public void inflateRegisterDialog(Activity activity) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
         View dialogView = activity.getLayoutInflater().inflate(R.layout.sign_up, null);
@@ -126,33 +154,56 @@ public abstract class BaseMainActivity extends AppCompatActivity {
         buttonRegister.setOnClickListener(v -> onRegisterButtonClick(editTextEmail, editTextPassword, editTextUsername, editTextConfirmPassword, dialog));
     }
 
+    /**
+     * Updates the interface to the logout interface.
+     */
     public void updateToLogoutInterface() {
         loggedAs.setText("Logged in as\nguest");
         logOutBtn.setVisibility(View.GONE);
     }
 
+    /**
+     * Updates the interface to the login interface.
+     * @param username The username of the logged in user.
+     */
     @SuppressLint("SetTextI18n")
     public void updateToLoginInterface(String username) {
         loggedAs.setText("Logged in as:\n" + username);
         logOutBtn.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Handles the event when a user logs out.
+     */
     public void onUserLogout() {
         clientController.updateUserLoggedOut();
         clientController = null;
         updateToLogoutInterface();
     }
 
+    /**
+     * Navigates to the statistics activity.
+     * @param activity The activity from where the navigation is to be done.
+     */
     public void goToStatisticsActivity(Activity activity) {
         Intent intent = new Intent(activity, Statistics.class);
         activity.startActivity(intent);
     }
 
+    /**
+     * Navigates to the settings activity.
+     * @param activity The activity from where the navigation is to be done.
+     */
     public void goToSettingsActivity(Activity activity) {
         Intent intent = new Intent(activity, Settings.class);
         activity.startActivity(intent);
     }
 
+    /**
+     * Creates an alert with the given message.
+     * @param message The message of the alert.
+     * @return The alert builder.
+     */
     public AlertDialog.Builder alert(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(message);
@@ -160,6 +211,9 @@ public abstract class BaseMainActivity extends AppCompatActivity {
         return builder;
     }
 
+    /**
+     * Sets the button listeners.
+     */
     private void setButtonListeners() {
         logOutBtn = findViewById(R.id.logout);
         logInBtn = findViewById(R.id.user);
@@ -172,6 +226,7 @@ public abstract class BaseMainActivity extends AppCompatActivity {
         goToStatisticsPage.setOnClickListener(v -> goToStatisticsActivity(this));
         goToSettingsPage.setOnClickListener(v -> goToSettingsActivity(this));
 
+        // if not main menu, set exit button back to the main menu
         if (!(this instanceof MainMenu)) {
             exitCurrentScreen = findViewById(R.id.exit);
             exitCurrentScreen.setOnClickListener(v -> exitToMainMenu());
@@ -179,11 +234,22 @@ public abstract class BaseMainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Handles the event when the register link is clicked.
+     * @param dialog The dialog where the register link is clicked.
+     * @param activity The activity where the dialog is.
+     */
     private void onRegisterLinkClick(Dialog dialog, Activity activity) {
         dialog.dismiss();
         inflateRegisterDialog(activity);
     }
 
+    /**
+     * Handles the event when the login button is clicked.
+     * @param editTextEmail The EditText for the email.
+     * @param editTextPassword The EditText for the password.
+     * @param dialog The dialog where the login button is clicked.
+     */
     private void onLoginButtonClick(EditText editTextEmail, EditText editTextPassword, Dialog dialog) {
         String email = editTextEmail.getText().toString();
         String password = editTextPassword.getText().toString();
@@ -193,6 +259,7 @@ public abstract class BaseMainActivity extends AppCompatActivity {
             return;
         }
 
+        // log in
         databaseController.logIn(email, password, this, new DatabaseController.LoginCallback() {
             @Override
             public void onLoginSuccess(DatabaseUser user) {
@@ -207,6 +274,14 @@ public abstract class BaseMainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles the event when the register button is clicked.
+     * @param editTextEmail The EditText for the email.
+     * @param editTextPassword The EditText for the password.
+     * @param editTextUsername The EditText for the username.
+     * @param editTextConfirmPassword The EditText for the confirm password.
+     * @param dialog The dialog where the register button is clicked.
+     */
     private void onRegisterButtonClick(EditText editTextEmail, EditText editTextPassword, EditText editTextUsername, EditText editTextConfirmPassword, Dialog dialog) {
         String email = editTextEmail.getText().toString();
         String password = editTextPassword.getText().toString();
@@ -217,9 +292,12 @@ public abstract class BaseMainActivity extends AppCompatActivity {
             alert("All fields must be filled").show();
             return;
         }
+
+        // register
         databaseController.register(email, password, confirmPassword, username, this, new DatabaseController.RegisterCallback() {
             @Override
             public void onRegisterSuccess(String email, String password) {
+                // log in
                 databaseController.logIn(email, password, BaseMainActivity.this, new DatabaseController.LoginCallback() {
                     @Override
                     public void onLoginSuccess(DatabaseUser user) {
@@ -240,6 +318,9 @@ public abstract class BaseMainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Exits to the main menu.
+     */
     public void exitToMainMenu() {
         finish();
     }

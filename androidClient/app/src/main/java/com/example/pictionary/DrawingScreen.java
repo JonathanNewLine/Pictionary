@@ -23,50 +23,82 @@ import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This class represents the drawing screen of the application.
+ */
 public class DrawingScreen extends BaseGameActivity {
-    // constants
+    /** constants */
+    // time for one game
     public final static int ROUND_TIME = 60;
+    // number of round before game ends
     public final static int NUM_OF_ROUNDS = 3;
 
-    // textViews
+    /** textViews */
+    // hint for word to draw or guess
     private TextView hint;
+    // time left in the round
     private TextView timeLeftTextView;
+    // current drawing player
     private TextView currentDrawing;
+    // what the round word was
     private TextView wordWas;
+    // current score of the player
     private TextView currScore;
 
-    // buttons
+    /** buttons */
+    // clear drawing button
     private ImageView clearBtn;
+    // undo last drawing action button
     private ImageView undoBtn;
+    // open color palette button
     private ImageView colorPalette;
+    // submit guess button
     private ImageView submitGuess;
+    // exit game button
     private ImageView exit;
+    // open users side bar button
     private ImageView openUsersSideBar;
 
-    // editTexts
+    /** editTexts */
+    // guesser input box
     private EditText guesserInputBox;
     
-    // drawing screen
+    /** drawing screen components */
+    // paint to draw with
     private DrawOnView paintClass;
+    // layout to draw on
     private FrameLayout drawing_screen;
+    // image view to display drawing for guesser
     private ImageView displayedDrawingForGuesser;
     
-    // other views
+    /** other views */
+    // cool down screen
     private FrameLayout coolDownScreen;
+    // color picker view
     private com.skydoves.colorpickerview.ColorPickerView colorPickerView;
+    // all toolbars - guesser and drawer
     private LinearLayout allToolbars;
+    // drawer toolbar
     private View drawerToolBar;
     
-    // countdown
-    private Runnable countDownUpdater;
+    /** handler */
+    // handler for countdown
     private final Handler countDownHandler = new Handler(Looper.getMainLooper());
+    // updater for countdown
+    private Runnable countDownUpdater;
 
-    // other
+    /** other */
+    // time left in the round
     private int timeLeft = ROUND_TIME;
+    // number of rounds played
     private int currRoundNum = 1;
+    // number of people in the room
     private int numOfPeopleInRoom;
+    // number of games played until the round
     private int numOfGames = 0;
+    // the correct guess
     private String correctGuess;
+    // the last user side bar message from server to pass on to the next activity
     private String lastUserSideBarFormat;
 
 
@@ -75,8 +107,11 @@ public class DrawingScreen extends BaseGameActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drawing_screen);
+        // set up the views
         setButtonListeners();
+        // set up the paint class to draw with
         setUpPaintClass();
+        // set up the countdown
         timeLeftTextView.setText(ROUND_TIME + "seconds");
     }
 
@@ -86,6 +121,10 @@ public class DrawingScreen extends BaseGameActivity {
         startMusic();
     }
 
+    /**
+     * Returns a Handler that will be used to process messages sent from the client controller.
+     * @return The Handler that will be used to process messages sent from the client controller.
+     */
     @Override
     public Handler getMessageHandler() {
         return new Handler(Looper.getMainLooper()) {
@@ -140,6 +179,12 @@ public class DrawingScreen extends BaseGameActivity {
             }
         };
     }
+
+    /**
+     * Navigates to the waiting room screen.
+     * @param winnerName The name of the winner.
+     * @param winnerPoints The points of the winner.
+     */
     private void goToWaitingRoom(String winnerName, String winnerPoints) {
         Intent intent = new Intent(DrawingScreen.this, WaitingRoom.class);
         intent.putExtra("isManager", isManager);
@@ -151,6 +196,9 @@ public class DrawingScreen extends BaseGameActivity {
         finish();
     }
 
+    /**
+     * Updates the interface to indicate a correct guess.
+     */
     @SuppressLint("SetTextI18n")
     private void updateCorrectGuess() {
         SoundEffects.playSound(SoundEffects.correct);
@@ -159,12 +207,19 @@ public class DrawingScreen extends BaseGameActivity {
         hint.setText(correctGuess);
     }
 
+    /**
+     * Displays a bitmap image on the screen.
+     * @param bitmapBytes The byte array representing the bitmap.
+     */
     private void putBitmapOnImage(byte[] bitmapBytes) {
         Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
         displayedDrawingForGuesser.setImageBitmap(bitmap);
         displayedDrawingForGuesser.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Opens or closes the color picker.
+     */
     private void pickColor() {
         colorPickerView.setColorListener((ColorEnvelopeListener) (envelope, fromUser) -> {
             colorPalette.setColorFilter(envelope.getColor());
@@ -179,6 +234,11 @@ public class DrawingScreen extends BaseGameActivity {
         }
     }
 
+    /**
+     * Updates the interface based on whether the user is the drawer or a guesser.
+     * @param isDrawer Whether the user is the drawer.
+     * @param drawerName The name of the drawer.
+     */
     @SuppressLint("SetTextI18n")
     private void getAppropriateInterface(boolean isDrawer, String drawerName) {
         allToolbars.setBackgroundColor(Color.parseColor("#83AABBCC"));
@@ -206,17 +266,24 @@ public class DrawingScreen extends BaseGameActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        // pause the music
         Intent musicIntent = new Intent(this, MusicService.class);
         musicIntent.addCategory("pause");
         startService(musicIntent);
     }
 
+    /**
+     * Resets the countdown clock.
+     */
     @SuppressLint("SetTextI18n")
     private void resetClock() {
         timeLeftTextView.setText(ROUND_TIME + " seconds");
         timeLeft = ROUND_TIME;
     }
 
+    /**
+     * Starts the countdown.
+     */
     @SuppressLint("SetTextI18n")
     private void startCountdown() {
         countDownHandler.removeCallbacks(countDownUpdater);
@@ -235,7 +302,10 @@ public class DrawingScreen extends BaseGameActivity {
         };
         countDownHandler.post(countDownUpdater);
     }
-    
+
+    /**
+     * Sets the listeners for the buttons on the screen.
+     */
     private void setButtonListeners() {
         drawing_screen = findViewById(R.id.drawing_screen);
         submitGuess = findViewById(R.id.submit_guess);
@@ -261,13 +331,19 @@ public class DrawingScreen extends BaseGameActivity {
         colorPalette.setOnClickListener(v -> pickColor());
         submitGuess.setOnClickListener(v -> submitGuess());
     }
-    
+
+    /**
+     * Submits a guess to the server.
+     */
     private void submitGuess() {
         correctGuess = guesserInputBox.getText().toString();
         clientController.submitGuess(correctGuess);
         guesserInputBox.setText("");
     }
 
+    /**
+     * Disables all views on the screen.
+     */
     private void disableAllViews() {
         guesserInputBox.setEnabled(false);
         undoBtn.setEnabled(false);
@@ -279,6 +355,9 @@ public class DrawingScreen extends BaseGameActivity {
         paintClass.setDrawingEnabled(false);
     }
 
+    /**
+     * Enables all views on the screen.
+     */
     private void enableAllViews() {
         guesserInputBox.setEnabled(true);
         submitGuess.setEnabled(true);
@@ -290,6 +369,10 @@ public class DrawingScreen extends BaseGameActivity {
         paintClass.setDrawingEnabled(true);
     }
 
+    /**
+     * Updates the user sidebar when a user update is received from the server.
+     * @param usersJson The JSON string representing the users.
+     */
     @SuppressLint("SetTextI18n")
     private void onReceivedUsersUpdate(String usersJson) {
         int selfScore = DatabaseController.getPointsByUsername(usersJson, DatabaseController.getCachedUser().getUsername());
@@ -298,32 +381,51 @@ public class DrawingScreen extends BaseGameActivity {
         numOfPeopleInRoom = updateUsersSideBar(usersJson);
         currScore.setText("Your score: " + selfScore);
     }
-    
+
+    /**
+     * Sets up the paint class for the drawing screen.
+     */
     private void setUpPaintClass() {
         paintClass = new DrawOnView(this);
         drawing_screen.addView(paintClass);
     }
-    
+
+    /**
+     * Starts the music service.
+     */
     private void startMusic() {
         Intent musicIntent = new Intent(this, MusicService.class);
         musicIntent.addCategory("start");
         startService(musicIntent);
     }
 
+    /**
+     * Continues to the next round.
+     * @param roundWord The word for the round.
+     */
     private void continueNextRound(String roundWord) {
         displayCoolDownScreen(roundWord);
         SoundEffects.playSound(SoundEffects.next);
     }
 
+    /**
+     * Displays the cool down screen.
+     * @param roundWord The word for the round.
+     */
     private void displayCoolDownScreen(String roundWord) {
         String roundNumber = getRoundNumber();
-        countDownHandler.removeCallbacks(countDownUpdater); // stop the countdown
+        // stop the countdown
+        countDownHandler.removeCallbacks(countDownUpdater);
         addCoolDownScreen(roundWord, roundNumber);
         coolDownScreen.setVisibility(View.VISIBLE);
         waitForCoolDownScreen().thenAccept(unused ->
                 runOnUiThread(this::removeCoolDownScreen));
     }
 
+    /**
+     * Gets the "round number: X" text and updates it.
+     * @return The round number.
+     */
     @SuppressLint("DefaultLocale")
     private String getRoundNumber() {
         String roundNumber = "";
@@ -339,6 +441,10 @@ public class DrawingScreen extends BaseGameActivity {
         return roundNumber;
     }
 
+    /**
+     * Waits for the cool down screen to finish.
+     * @return A CompletableFuture that will be completed when the cool down is finished.
+     */
     private CompletableFuture<Void> waitForCoolDownScreen() {
         return CompletableFuture.runAsync(() -> {
             try {
@@ -350,6 +456,11 @@ public class DrawingScreen extends BaseGameActivity {
         });
     }
 
+    /**
+     * Adds the cool down screen to the view.
+     * @param roundWord The word for the round.
+     * @param roundNumber The "round number: X" text.
+     */
     @SuppressLint("SetTextI18n")
     private void addCoolDownScreen(String roundWord, String roundNumber) {
         hint.setText(roundWord);
@@ -357,6 +468,9 @@ public class DrawingScreen extends BaseGameActivity {
         disableAllViews();
     }
 
+    /**
+     * Removes the cool down screen from the screen.
+     */
     private void removeCoolDownScreen() {
         coolDownScreen.setVisibility(View.GONE);
         displayedDrawingForGuesser.setBackgroundColor(Color.WHITE);
@@ -366,24 +480,38 @@ public class DrawingScreen extends BaseGameActivity {
         clientController.ackConfirm();
     }
 
+    /**
+     * Updates the word to draw.
+     * @param word The word to draw.
+     */
     @SuppressLint("SetTextI18n")
     private void updateWordToDraw(String word) {
         wordWas.setText("The word was: " + word);
         hint.setText(word);
     }
 
+    /**
+     * Updates the interface to indicate a wrong guess.
+     */
     private void updateWrongGuess() {
         SoundEffects.playSound(SoundEffects.wrong);
     }
 
+    /**
+     * Processes a bitmap from the server and displays it on the screen.
+     * @param initialData The initial data received from the server.
+     */
     private void processAndDisplayBitmapFromServer(String initialData) {
-        String encodedBitmap = clientController.receiveAll(initialData);
-        byte[] bitmapBytes = clientController.transformToBitmap(encodedBitmap);
+        byte[] bitmapBytes = clientController.getBitmapBytes(initialData);
         if (bitmapBytes != null) {
             putBitmapOnImage(bitmapBytes);
         }
     }
 
+    /**
+     * Updates the clue on the screen.
+     * @param clue The clue.
+     */
     private void updateClue(String clue) {
         hint.setText(clue);
     }

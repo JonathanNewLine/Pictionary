@@ -7,17 +7,24 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 public class MainMenu extends BaseMainActivity{
-    // buttons
+    /** buttons */
+
+    // creates a new room
     private Button createPrivateRoom;
+    // searches for a room
     private ImageView search;
+    // searches for a room
     private Button search2;
+    // goes to statistics
     private ImageView statistics;
+    // goes to settings
     private ImageView settings;
 
-    // editTexts
+    /** editTexts */
+    // input the id for the room
     private EditText searchGameId;
 
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,6 +32,10 @@ public class MainMenu extends BaseMainActivity{
         setButtonListeners();
     }
 
+    /**
+     * Creates a private room if the user is connected.
+     * If the user is not connected, it shows an alert.
+     */
     private void createPrivateRoom(){
         if (DatabaseController.getCachedUser() == null) {
             alert(BaseMainActivity.HAVE_TO_CONNECT_ALERT).show();
@@ -33,6 +44,10 @@ public class MainMenu extends BaseMainActivity{
         clientController.createPrivateRoom(this::goToGameActivity);
     }
 
+    /**
+     * Joins a private room with the inputted game ID.
+     * If the user is not connected or the game ID is empty, it shows an alert.
+     */
     private void joinPrivateRoom() {
         String searchedId = searchGameId.getText().toString();
         searchGameId.setText("");
@@ -50,6 +65,12 @@ public class MainMenu extends BaseMainActivity{
         clientController.joinPrivateRoom(gameId, this::goToGameActivity);
     }
 
+    /**
+     * Navigates to the game activity with the given game ID and manager status.
+     * If the game ID does not exist, it shows an alert.
+     * @param gameId The ID of the game to join.
+     * @param isManager Whether the user is the manager of the game.
+     */
     private void goToGameActivity(int gameId, boolean isManager) {
         if (gameId == ClientController.ID_DOES_NOT_EXIST) {
             runOnUiThread(() -> alert(BaseMainActivity.ID_DOES_NOT_EXIST).show());
@@ -76,6 +97,9 @@ public class MainMenu extends BaseMainActivity{
         }
     }
 
+    /**
+     * Sets the listeners for the buttons in the activity.
+     */
     private void setButtonListeners() {
         createPrivateRoom = findViewById(R.id.create_private_room);
         search = findViewById(R.id.search);
