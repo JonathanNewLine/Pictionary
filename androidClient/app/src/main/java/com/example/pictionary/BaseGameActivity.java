@@ -98,7 +98,6 @@ public abstract class BaseGameActivity extends AppCompatActivity {
             return;
         }
         // initialize everything
-        SoundEffects.init(this);
         setButtonListenersAndAdapters();
         getIntentData();
         updateLoggedAs();

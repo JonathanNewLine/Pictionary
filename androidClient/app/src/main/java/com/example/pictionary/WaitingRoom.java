@@ -122,13 +122,25 @@ public class WaitingRoom extends BaseGameActivity {
         dialogBuilder.setCancelable(true);
 
         ImageView exitWinnerScreen = dialogView.findViewById(R.id.back_to_waiting_room);
+        ImageView winnerScreenIcon = dialogView.findViewById(R.id.winner_loser_image);
         TextView winnerNameTextView = dialogView.findViewById(R.id.winner_name);
         TextView winnerPointsTextView = dialogView.findViewById(R.id.winner_score);
         TextView selfPointsTextView = dialogView.findViewById(R.id.winner_screen_player_score);
 
-        winnerNameTextView.setText("Winner:\n" + winnerName);
         winnerPointsTextView.setText("With a score of:\n" + winnerPoints + " points!");
         selfPointsTextView.setText("Your score: " + selfPoints);
+
+        // if self is winner
+        if (winnerName.equals(DatabaseController.getCachedUser().getUsername())) {
+            SoundEffects.playSound(SoundEffects.winner);
+            winnerScreenIcon.setImageResource(R.drawable.trophy);
+            winnerNameTextView.setText("Winner:\n YOU!!!");
+        }
+        else {
+            winnerNameTextView.setText("Winner:\n" + winnerName);
+            winnerScreenIcon.setImageResource(R.drawable.loser);
+            SoundEffects.playSound(SoundEffects.loser);
+        }
 
         Dialog dialog = dialogBuilder.create();
         Window window = dialog.getWindow();
@@ -140,7 +152,6 @@ public class WaitingRoom extends BaseGameActivity {
         dialog.show();
 
         exitWinnerScreen.setOnClickListener(v -> dialog.dismiss());
-        SoundEffects.playSound(SoundEffects.winner);
     }
 
     /**

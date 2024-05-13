@@ -21,6 +21,7 @@ public class SoundEffects {
     public static int winner;
     public static int join_room;
     public static int start;
+    public static int loser;
 
     /**
      * Initializes the sound effects.
@@ -43,6 +44,7 @@ public class SoundEffects {
         winner = soundPool.load(context, R.raw.winner, 1);
         join_room = soundPool.load(context, R.raw.join_room, 1);
         start = soundPool.load(context, R.raw.start, 1);
+        loser = soundPool.load(context, R.raw.loser, 1);
     }
 
     /**
