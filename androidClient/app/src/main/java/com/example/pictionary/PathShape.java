@@ -3,13 +3,9 @@ package com.example.pictionary;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PathMeasure;
-import android.graphics.PointF;
 
 import androidx.annotation.ColorInt;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class represents a drawable path with a specific color.

@@ -222,16 +222,33 @@ public class DrawingScreen extends BaseGameActivity {
      */
     private void pickColor() {
         colorPickerView.setColorListener((ColorEnvelopeListener) (envelope, fromUser) -> {
-            colorPalette.setColorFilter(envelope.getColor());
-            paintClass.setColor(envelope.getColor());
+            int color = envelope.getColor();
+            if (isShadeOfGray(color)) {
+                color = Color.BLACK;
+            }
+
+            colorPalette.setColorFilter(color);
+            paintClass.setColor(color);
             colorPickerView.setVisibility(View.GONE);
         });
+
+        // toggle colorPickerView visibility
         if (colorPickerView.getVisibility() == View.GONE) {
             colorPickerView.setVisibility(View.VISIBLE);
-        }
-        else if (colorPickerView.getVisibility() == View.VISIBLE) {
+        } else if (colorPickerView.getVisibility() == View.VISIBLE) {
             colorPickerView.setVisibility(View.GONE);
         }
+    }
+
+    /** Check if is shade of gray
+     * @return if is gray */
+    private boolean isShadeOfGray(int color) {
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+        // check if shade of gray
+        return Math.abs(red - green) < 5 && Math.abs(red - blue) < 5 && Math.abs(green - blue) < 5 &&
+                color != Color.WHITE;
     }
 
     /**

@@ -125,6 +125,7 @@ public class WaitingRoom extends BaseGameActivity {
         ImageView winnerScreenIcon = dialogView.findViewById(R.id.winner_loser_image);
         TextView winnerNameTextView = dialogView.findViewById(R.id.winner_name);
         TextView winnerPointsTextView = dialogView.findViewById(R.id.winner_score);
+        TextView loserTextView = dialogView.findViewById(R.id.loser_text);
         TextView selfPointsTextView = dialogView.findViewById(R.id.winner_screen_player_score);
 
         winnerPointsTextView.setText("With a score of:\n" + winnerPoints + " points!");
@@ -135,11 +136,13 @@ public class WaitingRoom extends BaseGameActivity {
             SoundEffects.playSound(SoundEffects.winner);
             winnerScreenIcon.setImageResource(R.drawable.trophy);
             winnerNameTextView.setText("Winner:\n YOU!!!");
+            loserTextView.setVisibility(View.INVISIBLE);
         }
         else {
             winnerNameTextView.setText("Winner:\n" + winnerName);
             winnerScreenIcon.setImageResource(R.drawable.loser);
             SoundEffects.playSound(SoundEffects.loser);
+            loserTextView.setVisibility(View.VISIBLE);
         }
 
         Dialog dialog = dialogBuilder.create();
