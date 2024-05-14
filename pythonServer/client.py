@@ -10,7 +10,8 @@ NUM_OF_ROUNDS = 3
 ROUND_TIME_OFFSET = 2
 ROUND_TIME = 60 + ROUND_TIME_OFFSET
 
-DRAWING_PLAYER_SCORE_MULTIPLIER = 30
+GUESSING_PLAYER_SCORE_MULTIPLIER = 10
+DRAWING_PLAYER_SCORE_MULTIPLIER = 80
 
 class ClientThread(Thread):
 
@@ -95,8 +96,8 @@ class ClientThread(Thread):
         self.send_message("statistics: " + self.client_info.to_json())
 
 
-    def send_all_continue_next_round(self, secret_word:str) -> None:
-        self.send_all("continue: " + secret_word, True)
+    def send_all_continue_next_round(self, secret_word:str, include_self:bool) -> None:
+        self.send_all("continue: " + secret_word, include_self)
 
 
     def send_all_statistics(self) -> None:
@@ -148,8 +149,10 @@ class ClientThread(Thread):
                 return
             except ExitRoomError:
                 self.handle_player_exit_room()
+                continue
             except AloneInGameError:
                 self.handle_alone_in_room()
+                continue
 
     
     def handle_client(self) -> None:
@@ -166,7 +169,6 @@ class ClientThread(Thread):
             self.client_info.set_name(name_sent)
             return True
         except ConnectionError:
-            self.handle_player_connection_aborted()
             return False
 
 
@@ -249,7 +251,7 @@ class ClientThread(Thread):
                     self.handle_guessing_player()
 
         self.finish_game()
-     
+    
     
     def init_game_data(self, is_first: bool) -> None:
         # choose word for round
@@ -289,17 +291,23 @@ class ClientThread(Thread):
     
 
     def handle_drawing_player(self) -> None:
-        round_secret_word = self.current_room.get_secret_word()
-        self.announce_is_drawing()
+        try:
+            round_secret_word = self.current_room.get_secret_word()
+            self.announce_is_drawing()
 
-        self.update_drawings_at_guessers()
+            self.update_drawings_at_guessers()
+            self.award_points_for_drawing_player()
 
-        self.award_points_for_drawing_player()
-        self.init_game_data(False)
-
-        self.send_all_continue_next_round(round_secret_word)
-        self.receive_until("continue ok")
-
+            self.init_game_data(False)
+            self.send_all_continue_next_round(round_secret_word, True)
+            self.receive_until("continue ok")
+        except (ExitRoomError, ConnectionAbortedError) as exception:
+            # if there's more then one player left in the room
+            if len(self.current_room.get_client_list()) > 2:
+                self.init_game_data(False)
+                self.send_all_continue_next_round(round_secret_word, False)
+            raise exception
+        
         
     def set_next_drawer_name(self, is_first: bool) -> None:
         client_list = self.current_room.get_client_list()
@@ -331,7 +339,7 @@ class ClientThread(Thread):
                 guessed_correctly = self.process_message_from_guesser(message)
 
             self.receive_until("continue ok")
-        except ExitRoomError:
+        except (ExitRoomError, ConnectionAbortedError):
             # if the player exited the room, remove the correct guess he made
             if guessed_correctly:
                 self.current_room.sub_correct_guess()
@@ -388,7 +396,7 @@ class ClientThread(Thread):
     
 
     def get_points_for_guess(self) -> int:
-        return ROUND_TIME - self.current_room.get_game_time_elapsed() - ROUND_TIME_OFFSET
+        return (ROUND_TIME - self.current_room.get_game_time_elapsed() - ROUND_TIME_OFFSET)*GUESSING_PLAYER_SCORE_MULTIPLIER
     
 
     def get_points_for_drawing(self) -> int:
@@ -410,7 +418,7 @@ class ClientThread(Thread):
         
         except (ValueError, TimeoutError):
             return 0, ""
-        except (ExitRoomError, AloneInGameError) as exception:
+        except (ExitRoomError, ConnectionAbortedError, AloneInGameError) as exception:
             raise exception
         finally:
             self.connection.settimeout(None)
