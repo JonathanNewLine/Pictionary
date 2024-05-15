@@ -31,10 +31,8 @@ class Rooms:
         """
         room_requested: Room = self.rooms_list.get(room_id)
 
-        if room_requested == None: # if id wasn't found
-            return None
-
-        room_requested.add_client(client)
+        if room_requested != None and not room_requested.is_ingame(): # if id wasn't found or room is ingame
+            room_requested.add_client(client)
         return room_requested
 
     def remove_client(self, client: 'ClientThread') -> None:

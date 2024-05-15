@@ -36,7 +36,6 @@ class Room:
         self.drawer_name: str = ""
         # add the manager to the room
         self.players.append(manager)
-
     
     def add_client(self, client: 'ClientThread') -> None:
         """ Adds a client to the room.

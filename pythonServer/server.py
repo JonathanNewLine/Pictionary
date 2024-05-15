@@ -2,8 +2,12 @@ import socket
 from client import ClientThread
 from rooms import Rooms
 
+"""constants"""
+# bind to all interfaces
 TCP_IP = '0.0.0.0'
+# port to listen on
 TCP_PORT = 6969
+# number of incoming connections to queue
 INCOMING_CONNECTIONS = 5
 
 class Server:
