@@ -76,6 +76,10 @@ public class MainMenu extends BaseMainActivity{
             runOnUiThread(() -> alert(BaseMainActivity.ID_DOES_NOT_EXIST).show());
             return;
         }
+        if (gameId == ClientController.ID_ALREADY_IN_GAME) {
+            runOnUiThread(() -> alert(BaseMainActivity.ALREADY_IN_GAME).show());
+            return;
+        }
         SoundEffects.playSound(SoundEffects.join_room);
         Intent intent = new Intent(MainMenu.this, WaitingRoom.class);
         intent.putExtra("gameId", gameId);

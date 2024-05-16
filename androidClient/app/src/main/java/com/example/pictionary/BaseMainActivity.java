@@ -26,6 +26,7 @@ public abstract class BaseMainActivity extends AppCompatActivity {
     public static final String HAVE_TO_CONNECT_ALERT = "You have to connect as a user first";
     public static final String EMPTY_ID_INPUT = "Id field is empty";
     public static final String ID_DOES_NOT_EXIST = "Nonexistent id";
+    public static final String ALREADY_IN_GAME = "Game is ongoing, wait for everyone to finish the game";
 
     /** textViews */
     // logged in as

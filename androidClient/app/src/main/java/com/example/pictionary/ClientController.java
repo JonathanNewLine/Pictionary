@@ -29,6 +29,7 @@ public class ClientController {
 
     /** constants */
     public final static int ID_DOES_NOT_EXIST = -1;
+    public final static int ID_ALREADY_IN_GAME = -2;
     public final static int PORT = 6969;
     public final static String SERVER_IP = "64.226.121.246";
     // quality of the image sent to the server
@@ -257,10 +258,16 @@ public class ClientController {
     public void joinPrivateRoom(int gameId, JoinRoomCallback callback) {
         sendMessage("find room " + gameId);
         receiveMessage().thenAccept(response -> {
-            if (response.equals("no")) {
-                callback.onRoomJoined(ID_DOES_NOT_EXIST, false);
-            } else if (response.equals("yes")) {
-                callback.onRoomJoined(gameId, false);
+            switch (response) {
+                case "no":
+                    callback.onRoomJoined(ID_DOES_NOT_EXIST, false);
+                    break;
+                case "yes":
+                    callback.onRoomJoined(gameId, false);
+                    break;
+                case "ingame":
+                    callback.onRoomJoined(ID_ALREADY_IN_GAME, false);
+                    break;
             }
         });
     }
