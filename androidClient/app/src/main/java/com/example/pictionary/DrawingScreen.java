@@ -494,7 +494,7 @@ public class DrawingScreen extends BaseGameActivity {
         enableAllViews();
         resetClock();
         startCountdown();
-        clientController.ackConfirm();
+        clientController.ackContinue();
     }
 
     /**

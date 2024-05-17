@@ -303,7 +303,7 @@ public class ClientController {
     /**
      * Acknowledges the correct guess message from the server.
      */
-    public void ackConfirm() {
+    public void ackContinue() {
         sendMessage("continue ok");
     }
 
