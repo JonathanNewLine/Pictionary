@@ -10,13 +10,25 @@ TCP_PORT = 6969
 # number of incoming connections to queue
 INCOMING_CONNECTIONS = 5
 
+
+def add_thread(connection: socket, rooms: Rooms) -> None:
+    """ Adds a new thread to the server to handle a client connection.
+
+    Args:
+        connection (socket): The connection to the client.
+        rooms (Rooms): The rooms object of the server.
+    """
+    new_client = ClientThread(connection, rooms)
+    new_client.start()
+
+
 class Server:
     """
     Server that handles client connections and manages rooms.
     """
 
     def __init__(self) -> None:
-        """ intializes the server's rooms.
+        """ initializes the server's rooms.
         """
         self.rooms = Rooms()
 
@@ -28,16 +40,6 @@ class Server:
             main_thread.bind((TCP_IP, TCP_PORT)) 
             while True: 
                 main_thread.listen(INCOMING_CONNECTIONS) 
-                connection, (ip, port) = main_thread.accept()
-                self.add_thread(connection, self.rooms)
-
-    def add_thread(self, connection: socket, rooms: Rooms) -> None:
-        """ Adds a new thread to the server to handle a client connection.
-
-        Args:
-            connection (socket): The connection to the client.
-            rooms (Rooms): The rooms object of the server.
-        """
-        new_client = ClientThread(connection, rooms) 
-        new_client.start()
+                connection, (_, _) = main_thread.accept()
+                add_thread(connection, self.rooms)
         

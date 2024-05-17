@@ -4,11 +4,12 @@ from single_room import Room
 if TYPE_CHECKING:
     from client import ClientThread
 
+
 class Rooms:
     """
     Representing a collection of rooms in a server.
     """
-    
+
     # constants
     # not connected to room - id field filler
     NOT_CONNECTED_TO_ROOM = None
@@ -31,7 +32,7 @@ class Rooms:
         """
         room_requested: Room = self.rooms_list.get(room_id)
 
-        if room_requested != None and not room_requested.is_ingame(): # if id wasn't found or room is ingame
+        if room_requested is not None and not room_requested.is_ingame():  # if id wasn't found or room is ingame
             room_requested.add_client(client)
         return room_requested
 
@@ -45,9 +46,9 @@ class Rooms:
         room_connected_to: Room = self.rooms_list.get(current_id)
 
         # if player is last in the room, delete the room
-        if (len(room_connected_to.get_client_list()) == 1):
+        if len(room_connected_to.get_client_list()) == 1:
             self.rooms_list.pop(current_id)
-        else: # remove player from the room
+        else:  # remove player from the room
             room_connected_to.remove_client(client)
 
     def generate_room_id(self) -> int:
@@ -57,9 +58,9 @@ class Rooms:
             int: the new room id
         """
         if len(self.rooms_list) == 0:
-            new_room_id = 0 # create first room with id 0
+            new_room_id = 0  # create first room with id 0
         else:
-            new_room_id = list(self.rooms_list.keys())[-1] + 1 # get last room id and add 1
+            new_room_id = list(self.rooms_list.keys())[-1] + 1  # get last room id and add 1
         return new_room_id
 
     def create_new_room(self, manager: 'ClientThread') -> tuple[int, Room]:
@@ -75,7 +76,7 @@ class Rooms:
         self.rooms_list[new_room_id] = Room(manager, new_room_id)
 
         # return the new room id and the room object
-        return new_room_id, self.rooms_list[new_room_id] 
+        return new_room_id, self.rooms_list[new_room_id]
 
     def room_exists(self, room_id: int) -> bool:
         """ Checks if a room with the specified ID exists.

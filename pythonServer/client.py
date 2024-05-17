@@ -6,7 +6,7 @@ from client_info import ClientInfo
 
 """constants"""
 # buffer size for receiving messages
-BUFFER_SIZE = 8192 
+BUFFER_SIZE = 8192
 # number of rounds in a game
 NUM_OF_ROUNDS = 3
 # time offset for round time
@@ -19,11 +19,24 @@ GUESSING_PLAYER_SCORE_MULTIPLIER = 5
 # points multiplier for guessing player
 DRAWING_PLAYER_SCORE_MULTIPLIER = 80
 
+
+def generate_clue_for_guessers(secret_word: str) -> str:
+    """ generate a clue for the guessers
+
+    Args:
+        secret_word (str): the secret word of the round
+
+    Returns:
+        str: the clue for the guessers
+    """
+    return ' '.join(' ' if char.isspace() else '_' for char in secret_word)
+
+
 class ClientThread(Thread):
     """ A thread that handles a client connection to the server.
     """
 
-    def __init__(self, connection: socket.socket, all_rooms: Rooms) -> None: 
+    def __init__(self, connection: socket.socket, all_rooms: Rooms) -> None:
         """ Initializes the client thread with the given connection,
         all rooms, the client information.
 
@@ -42,17 +55,16 @@ class ClientThread(Thread):
         # the connection to the client
         self.connection: socket.socket = connection
 
-
-    def join_room(self, id:int) -> bool:
+    def join_room(self, id_to_join: int) -> bool:
         """ join the room with the given id
 
         Args:
-            id (int): the id of the room to join
+            id_to_join (int): the id of the room to join
 
         Returns:
             bool: True if the room was joined successfully, False otherwise
         """
-        room_requested = self.all_rooms.add_client(id, self)
+        room_requested = self.all_rooms.add_client(id_to_join, self)
         # if the room doesn't exist
         if room_requested is None:
             self.send_message("no")
@@ -67,7 +79,6 @@ class ClientThread(Thread):
             self.send_waiting_room_start_time()
             return True
 
-
     def create_new_room(self) -> None:
         """ create a new room and connect to it
         """
@@ -75,26 +86,24 @@ class ClientThread(Thread):
         self.send_message(str(new_id))
         self.update_waiting_room_start_time()
 
-
     def remove_client_from_room(self) -> None:
         """ remove the client from the current room
         """
         self.client_info.init_statistic_data()
-        
+
         if self.current_room is None:
             self.current_room = Rooms.NOT_CONNECTED_TO_ROOM
             return
-        
-        prev_manager = self.current_room.get_room_manager() # get the manager before removing the client
+
+        prev_manager = self.current_room.get_room_manager()  # get the manager before removing the client
         self.all_rooms.remove_client(self)
         if not self.all_rooms.room_exists(self.current_room.get_room_id()):
             self.current_room = Rooms.NOT_CONNECTED_TO_ROOM
             return
-        
+
         self.replace_manager(prev_manager)
         self.send_to_waiting_room_alone()
         self.current_room = Rooms.NOT_CONNECTED_TO_ROOM
-        
 
     def replace_manager(self, prev_manager: 'ClientThread') -> None:
         """ replace the manager of the room
@@ -106,7 +115,6 @@ class ClientThread(Thread):
         if prev_manager == self:
             client_list[0].set_new_manager()
 
-
     def send_to_waiting_room_alone(self) -> None:
         """ send the client to the waiting room if he is alone in the game
         """
@@ -117,42 +125,35 @@ class ClientThread(Thread):
         else:
             self.notify_all_on_connected_users_changed()
 
-    
     def set_new_manager(self) -> None:
         """ update user that he is the manager
         """
         self.send_message("manager")
-
 
     def announce_alone_in_game(self) -> None:
         """ announce to the user that he is alone in the game
         """
         self.send_message("alone")
 
-    
     def announce_is_drawing(self) -> None:
         """ announce to the user that he is drawing
         """
         self.send_message("draw: " + self.current_room.get_secret_word())
-
 
     def send_guesser_guessed_correctly(self) -> None:
         """ send a message to the user that he guessed correctly
         """
         self.send_message("correct")
 
-
     def send_guesser_guessed_incorrectly(self) -> None:
         """ send a message to the user that he guessed incorrectly
         """
         self.send_message("wrong")
 
-
     def send_already_ingame(self) -> None:
         """ send a message to the user that the game he's trying to join is ongoing
         """
         self.send_message("ingame")
-
 
     def announce_is_guessing(self, drawing_player_name: str, secret_word: str) -> None:
         """ announce to the user that he is guessing
@@ -161,16 +162,14 @@ class ClientThread(Thread):
             drawing_player_name (str): the name of the drawing player
             secret_word (str): the secret word of the round
         """
-        self.send_message("guess: " + drawing_player_name + "," + self.generate_clue_for_guessers(secret_word))
+        self.send_message("guess: " + drawing_player_name + "," + generate_clue_for_guessers(secret_word))
 
-    
     def send_statistics_to_user(self) -> None:
         """ send the statistics of the user to the user
         """
         self.send_message("statistics: " + self.client_info.to_json())
 
-
-    def send_all_continue_next_round(self, secret_word:str, include_self:bool) -> None:
+    def send_all_continue_next_round(self, secret_word: str, include_self: bool) -> None:
         """ send a message to all users to continue to the next round
 
         Args:
@@ -179,13 +178,11 @@ class ClientThread(Thread):
         """
         self.send_all("continue: " + secret_word, include_self)
 
-
     def send_all_statistics(self) -> None:
         """ send the statistics to all users
         """
         for client in self.current_room.get_client_list():
             client.send_statistics_to_user()
-
 
     def init_all_statistics_data(self) -> None:
         """ initialize the statistics data for all users
@@ -193,18 +190,15 @@ class ClientThread(Thread):
         for client in self.current_room.get_client_list():
             client.client_info.init_statistic_data()
 
-
     def send_waiting_room_start_time(self) -> None:
         """ send the waiting room start time to the user
         """
         self.send_message("time: " + str(self.current_room.get_waiting_room_start_time()))
 
-
     def send_all_waiting_room_start_time(self) -> None:
         """ send the waiting room start time to all users
         """
         self.send_all("time: " + str(self.current_room.get_waiting_room_start_time()), True)
-
 
     def notify_connected_users_changed(self) -> None:
         """ notify user in the room that the connected users or their points changed
@@ -212,13 +206,11 @@ class ClientThread(Thread):
         users_json = self.current_room.get_users_json()
         self.send_message("users: " + users_json)
 
-
     def notify_all_on_connected_users_changed(self) -> None:
         """ notify all users in the room that the connected users, or their points changed
         """
-        for client in self.current_room.get_client_list(): 
+        for client in self.current_room.get_client_list():
             client.notify_connected_users_changed()
-
 
     def send_all_drawing(self, drawing_bytes: str, length: int) -> None:
         """ send the drawing to all users in the room
@@ -229,7 +221,6 @@ class ClientThread(Thread):
         """
         composed_drawing_message = str(length) + "dataBytes:" + drawing_bytes
         self.send_all(composed_drawing_message, False)
-
 
     def send_all_to_waiting_room(self) -> None:
         """ send all users to the waiting room
@@ -242,7 +233,7 @@ class ClientThread(Thread):
         # if obtaining username fails, return
         if not self.get_username():
             return
-        
+
         while True:
             try:
                 self.handle_client()
@@ -256,7 +247,6 @@ class ClientThread(Thread):
                 self.handle_alone_in_room()
                 continue
 
-    
     def handle_client(self) -> None:
         """ handle the client's actions
         """
@@ -265,7 +255,6 @@ class ClientThread(Thread):
         while True:
             self.handle_waiting_room()
             self.handle_drawing_room()
-
 
     def get_username(self) -> bool:
         """ get the username of the client
@@ -279,7 +268,6 @@ class ClientThread(Thread):
             return True
         except ConnectionError:
             return False
-
 
     def wait_for_room_join(self) -> None:
         """ wait for the client to join a room
@@ -296,7 +284,6 @@ class ClientThread(Thread):
                 room_id_request = int(player_response.split("find room ")[1])
                 joining_room_successful = self.join_room(room_id_request)
 
-
     def connect_to_room(self) -> None:
         """ connect the client to a room
         """
@@ -304,16 +291,14 @@ class ClientThread(Thread):
         # after connected to room, update all on connected users changed
         self.notify_all_on_connected_users_changed()
 
-
     def handle_waiting_room(self) -> None:
         """ handle the waiting room actions
         """
         if self.is_manager():
             self.start_from_manager()
         else:
-            self.wait_for_game_beggining()
+            self.wait_for_game_beginning()
 
-        
     def start_from_manager(self) -> None:
         """ wait for the manager to start the game, and then start it
         """
@@ -323,14 +308,12 @@ class ClientThread(Thread):
         self.start_game_for_all()
         self.receive_until("start ok")
 
-
     def update_waiting_room_start_time(self) -> None:
         """ update the waiting room start time
         """
         self.current_room.set_waiting_room_start_time()
         # update all on waiting room start time changed
         self.send_all_waiting_room_start_time()
-
 
     def start_game_for_all(self) -> None:
         """ update everyone that the game has started
@@ -341,13 +324,12 @@ class ClientThread(Thread):
 
         self.send_all("start", True)
 
-        # send all users the the user list for the game room
+        # send all users the user list for the game room
         self.notify_all_on_connected_users_changed()
 
         self.current_room.set_ingame(True)
 
-
-    def wait_for_game_beggining(self) -> None:
+    def wait_for_game_beginning(self) -> None:
         """ wait for the game to start by the manager
         """
         received_message = self.receive_until("start ok", "manager ok")
@@ -356,12 +338,11 @@ class ClientThread(Thread):
         if received_message == "manager ok":
             self.start_from_manager()
 
-
     def handle_drawing_room(self) -> None:
         """ handle the drawing room actions
         """
         # rounds loop
-        for round in range(NUM_OF_ROUNDS):
+        for game_round in range(NUM_OF_ROUNDS):
             # pick a drawing player
             for drawing_player in self.current_room.get_client_list():
                 if self == drawing_player:
@@ -370,8 +351,7 @@ class ClientThread(Thread):
                     self.handle_guessing_player()
 
         self.finish_game()
-    
-    
+
     def init_game_data(self, is_first: bool) -> None:
         """ initialize the game data for the round
 
@@ -383,7 +363,6 @@ class ClientThread(Thread):
         self.set_next_drawer_name(is_first)
         self.current_room.init_correct_guesses()
         self.current_room.set_game_start_time()
-
 
     def finish_game(self) -> None:
         """ finish the game
@@ -398,14 +377,12 @@ class ClientThread(Thread):
         # get the time elapsed to the waiting room
         self.send_waiting_room_start_time()
 
-
     def manager_go_to_winner_screen(self) -> None:
         """ send everyone to the winner screen and the waiting room
         """
         self.send_all_to_waiting_room()
         self.send_all_statistics()
         self.reset_game_data()
-        
 
     def reset_game_data(self) -> None:
         """ reset the game data, and prepare the waiting room
@@ -413,7 +390,6 @@ class ClientThread(Thread):
         self.init_all_statistics_data()
         self.current_room.set_ingame(False)
         self.current_room.set_waiting_room_start_time()
-
 
     def get_winner_name_and_points(self) -> str:
         """ get the winner name and points
@@ -424,7 +400,6 @@ class ClientThread(Thread):
         winner = max(self.current_room.get_client_list(), key=lambda client: client.client_info.get_points())
         winner.client_info.add_to_games_won(1)
         return f"{winner.client_info.get_name()},{str(winner.client_info.get_points())}"
-    
 
     def handle_drawing_player(self) -> None:
         """ handle the drawing player's actions
@@ -432,8 +407,8 @@ class ClientThread(Thread):
         Raises:
             exception: if the drawing player exits the room
         """
+        round_secret_word = self.current_room.get_secret_word()
         try:
-            round_secret_word = self.current_room.get_secret_word()
             self.announce_is_drawing()
 
             self.update_drawings_at_guessers()
@@ -444,14 +419,13 @@ class ClientThread(Thread):
             self.send_all_continue_next_round(round_secret_word, True)
             self.receive_until("continue ok")
         except (ExitRoomError, ConnectionAbortedError) as exception:
-            # if there's more then one player left in the room
+            # if there's more than one player left in the room
             if len(self.current_room.get_client_list()) > 2:
                 # update on game change
                 self.init_game_data(False)
                 self.send_all_continue_next_round(round_secret_word, False)
             raise exception
-        
-        
+
     def set_next_drawer_name(self, is_first: bool) -> None:
         """ set the next drawer name
 
@@ -465,12 +439,11 @@ class ClientThread(Thread):
             next_drawer_index = 0
         else:
             next_drawer_index = (client_list.index(self) + 1) % len(client_list)
-        
+
         # get the next drawer name
         next_drawer_name = client_list[next_drawer_index].client_info.get_name()
         self.current_room.set_drawing_player_name(next_drawer_name)
 
-        
     def handle_guessing_player(self) -> None:
         """ handle the guessing player's actions
         """
@@ -478,7 +451,6 @@ class ClientThread(Thread):
         secret_word = self.current_room.get_secret_word()
         self.announce_is_guessing(drawer_name, secret_word)
         self.process_guesses()
-
 
     def process_guesses(self) -> None:
         """ process the guesses of the guessers
@@ -501,7 +473,6 @@ class ClientThread(Thread):
             if guessed_correctly:
                 self.current_room.sub_correct_guess()
             raise exception
-        
 
     def process_message_from_guesser(self, message: str) -> bool:
         """ process the message from the guesser
@@ -514,7 +485,7 @@ class ClientThread(Thread):
         """
         if message == "manager ok":
             return False
-        
+
         self.client_info.add_to_guesses(1)
 
         if self.is_correct_guess(message):
@@ -524,16 +495,14 @@ class ClientThread(Thread):
         else:
             self.send_guesser_guessed_incorrectly()
             return False
-        
 
     def register_correct_guess(self) -> None:
         """ register a correct guess in their statistics and the room
         """
         self.client_info.add_to_correct_guesses(1)
         self.client_info.add_to_points(self.get_points_for_guess())
-        self.notify_all_on_connected_users_changed() # update points for guessing player for everyone
+        self.notify_all_on_connected_users_changed()  # update points for guessing player for everyone
         self.current_room.add_correct_guess()
-
 
     def award_points_for_drawing_player(self) -> None:
         """ award points for the drawing player
@@ -543,18 +512,16 @@ class ClientThread(Thread):
             self.client_info.add_to_points(self.get_points_for_drawing())
             # update points for drawing player for everyone
             self.notify_all_on_connected_users_changed()
-        
-    
+
     def update_drawings_at_guessers(self) -> None:
         """ update the drawings at the guessers' screen
         """
         while not self.is_game_ended():
             length, drawing_bytes = self.receive_drawing()
-            if (length <= 0):
+            if length <= 0:
                 continue
             # received drawing, send it to all guessers
             self.send_all_drawing(drawing_bytes, length)
-        
 
     def is_game_ended(self) -> bool:
         """ check if the game has ended
@@ -565,19 +532,6 @@ class ClientThread(Thread):
         is_everyone_guessed = self.current_room.is_everyone_guessed_correctly()
         is_time_ended = self.current_room.get_game_time_elapsed() >= ROUND_TIME
         return is_everyone_guessed or is_time_ended
-    
-    
-    def generate_clue_for_guessers(self, secret_word:str) -> str:
-        """ generate a clue for the guessers
-
-        Args:
-            secret_word (str): the secret word of the round
-
-        Returns:
-            str: the clue for the guessers
-        """
-        return ' '.join(' ' if char.isspace() else '_' for char in secret_word)
-    
 
     def get_points_for_guess(self) -> int:
         """ get the points for the guessing player on their guess
@@ -585,8 +539,9 @@ class ClientThread(Thread):
         Returns:
             int: the points for the guessing player
         """
-        return (ROUND_TIME - self.current_room.get_game_time_elapsed() - ROUND_TIME_OFFSET)*GUESSING_PLAYER_SCORE_MULTIPLIER
-    
+        return ((
+                    ROUND_TIME - self.current_room.get_game_time_elapsed() - ROUND_TIME_OFFSET) *
+                GUESSING_PLAYER_SCORE_MULTIPLIER)
 
     def get_points_for_drawing(self) -> int:
         """ get the points for the drawing player
@@ -594,8 +549,7 @@ class ClientThread(Thread):
         Returns:
             int: the points for the drawing player
         """
-        return self.current_room.get_correct_guesses()*DRAWING_PLAYER_SCORE_MULTIPLIER
-        
+        return self.current_room.get_correct_guesses() * DRAWING_PLAYER_SCORE_MULTIPLIER
 
     def send_message(self, message: str) -> None:
         """ send a message to the client
@@ -607,10 +561,9 @@ class ClientThread(Thread):
             self.connection.send((message + "\n").encode())
         except BrokenPipeError:
             raise ConnectionAbortedError
-            
+
         if len(message) < 30 or "{" in message:
             print(f"\n-- send: '{message}' to {self.client_info.get_name()}")
-
 
     def receive_drawing(self) -> tuple[int, str]:
         """ receive the drawing from the client
@@ -627,7 +580,7 @@ class ClientThread(Thread):
             drawing_player_response = self.receive_message()
             length, initial_data = tuple(drawing_player_response.split("dataBytes:", 1))
             return self.get_rest_of_drawing(int(length), initial_data)
-        
+
         except (ValueError, TimeoutError):
             return 0, ""
         except (ExitRoomError, ConnectionAbortedError, AloneInGameError) as exception:
@@ -635,7 +588,6 @@ class ClientThread(Thread):
         finally:
             self.connection.settimeout(None)
 
-    
     def get_rest_of_drawing(self, length: int, initial_data: str) -> tuple[int, str]:
         """ get the rest of the drawing with the begging message
 
@@ -650,7 +602,6 @@ class ClientThread(Thread):
         while len(data) < length:
             data += self.receive_message()
         return length, data
-
 
     def receive_message(self) -> str:
         """ receive a message from the client
@@ -675,7 +626,6 @@ class ClientThread(Thread):
             raise AloneInGameError
         else:
             return message
-                
 
     def __str__(self) -> str:
         """ get the string representation of the client
@@ -684,7 +634,6 @@ class ClientThread(Thread):
             str: the string representation of the client
         """
         return self.client_info.get_name()
-    
 
     def send_all(self, message: str, include_self: bool) -> None:
         """ send a message to all players in the room
@@ -697,9 +646,8 @@ class ClientThread(Thread):
             if not include_self and player == self:
                 continue
             player.send_message(message)
-    
 
-    def receive_until(self, expected1: str, expected2: str=None) -> str:
+    def receive_until(self, expected1: str, expected2: str = None) -> str:
         """ receive messages until one of the expected messages is received
 
         Args:
@@ -714,7 +662,6 @@ class ClientThread(Thread):
             received_message = self.receive_message()
 
         return received_message
-    
 
     def is_correct_guess(self, guess: str) -> bool:
         """ check if the guess is correct
@@ -727,13 +674,11 @@ class ClientThread(Thread):
         """
         return guess.lower().strip() == self.current_room.get_secret_word().lower()
 
-
     def handle_player_exit_room(self) -> None:
         """ handle the player exiting the room
         """
         self.remove_client_from_room()
         self.send_message("exit ok")
-
 
     def handle_player_connection_aborted(self) -> None:
         """ handle the player's connection being aborted
@@ -741,13 +686,11 @@ class ClientThread(Thread):
         self.remove_client_from_room()
         self.connection.close()
 
-
     def handle_alone_in_room(self) -> None:
         """ handle the player being alone in the room
         """
         self.finish_game()
 
-    
     def is_manager(self) -> bool:
         """ check if the player is the manager of the room
 
@@ -758,13 +701,12 @@ class ClientThread(Thread):
 
 
 class ExitRoomError(Exception):
-    """
-    Exception raised when a player exits the room
+    """ Exception raised when the player exits the room
     """
     pass
 
+
 class AloneInGameError(Exception):
-    """
-    Exception raised when a player is alone in the game
+    """ Exception raised when the player is alone in the game
     """
     pass

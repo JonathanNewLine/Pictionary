@@ -1,6 +1,5 @@
 import json
 
-import json
 
 class ClientInfo:
     """
