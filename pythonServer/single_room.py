@@ -76,7 +76,7 @@ class Room:
     def generate_secret_word(self) -> None:
         """ Generates a secret word for the room from a list of words.
         """
-        with open('word_list.json', 'r') as file:
+        with open('/home/jonathan/YonatanServer/pythonServer/word_list.json', 'r') as file:
             data = json.load(file)
         words = [entry['word'] for entry in data]
         self.secret_word = random.choice(words)
