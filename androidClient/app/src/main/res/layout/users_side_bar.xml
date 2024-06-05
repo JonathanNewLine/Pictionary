@@ -12,7 +12,7 @@
         android:background="#334257"
         android:layout_alignParentBottom="true">
 
-        <ImageView
+        <pl.droidsonroids.gif.GifImageView
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:src="@drawable/fire" />

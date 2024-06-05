@@ -1,432 +1,280 @@
 package com.example.pictionary;
 
-import androidx.activity.OnBackPressedCallback;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
+import android.os.Looper;
+import android.os.Message;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.graphics.BitmapFactory;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
+/**
+ * This class represents the drawing screen of the application.
+ */
 public class DrawingScreen extends BaseGameActivity {
+    /** constants */
+    // time for one game
     public final static int ROUND_TIME = 60;
+    // number of round before game ends
     public final static int NUM_OF_ROUNDS = 3;
-    private DrawOnView paintClass;
-    private ImageView colorPalette;
-    private Client client;
-    private FrameLayout drawing_screen;
-    private ImageView guesserImageView;
-    private ImageView clearBtn;
-    private ImageView undoBtn;
-    private FrameLayout mainScreen;
-    private ImageView submitGuess;
-    private TextView wordWas;
-    private EditText guesserToolbar;
-    private TextView hint;
-    private int backButtonCount = 0;
-    private boolean isManager;
-    private int gameId;
-    private String lastUserSideBarFormat;
-    private LinearLayout allToolbars;
-    private TextView currentDrawing;
-    private TextView currScore;
-    private Intent musicIntent;
-    private ListView usersListView;
-    public static final int DOUBLE_BACK_PRESS_INTERVAL = 1000;
-    private String correctGuess;
-    private UserAdapter userAdapter;
-    private int timeLeft = ROUND_TIME;
-    private Runnable updateCountdown;
-    private final Handler handler = new Handler();
-    private TextView timeLeftTextView;
-    private int numOfPeopleInRoom;
-    private int numOfGamesUntilRound;
-    private int currRoundNum = 1;
 
+    /** textViews */
+    // hint for word to draw or guess
+    private TextView hint;
+    // time left in the round
+    private TextView timeLeftTextView;
+    // current drawing player
+    private TextView currentDrawing;
+    // what the round word was
+    private TextView wordWas;
+    // current score of the player
+    private TextView currScore;
+
+    /** buttons */
+    // clear drawing button
+    private ImageView clearBtn;
+    // undo last drawing action button
+    private ImageView undoBtn;
+    // open color palette button
+    private ImageView colorPalette;
+    // submit guess button
+    private ImageView submitGuess;
+    // exit game button
+    private ImageView exit;
+    // open users side bar button
+    private ImageView openUsersSideBar;
+
+    /** editTexts */
+    // guesser input box
+    private EditText guesserInputBox;
+    
+    /** drawing screen components */
+    // paint to draw with
+    private DrawOnView paintClass;
+    // layout to draw on
+    private FrameLayout drawing_screen;
+    // image view to display drawing for guesser
+    private ImageView displayedDrawingForGuesser;
+    
+    /** other views */
+    // cool down screen
+    private FrameLayout coolDownScreen;
+    // color picker view
     private com.skydoves.colorpickerview.ColorPickerView colorPickerView;
+    // all toolbars - guesser and drawer
+    private LinearLayout allToolbars;
+    // drawer toolbar
+    private View drawerToolBar;
+    
+    /** handler */
+    // handler for countdown
+    private final Handler countDownHandler = new Handler(Looper.getMainLooper());
+    // updater for countdown
+    private Runnable countDownUpdater;
+
+    /** other */
+    // time left in the round
+    private int timeLeft = ROUND_TIME;
+    // number of rounds played
+    private int currRoundNum = 1;
+    // number of people in the room
+    private int numOfPeopleInRoom;
+    // number of games played until the round
+    private int numOfGames = 0;
+    // the correct guess
+    private String correctGuess;
+    // the last user side bar message from server to pass on to the next activity
+    private String lastUserSideBarFormat;
+
 
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drawing_screen);
-
-        client = Client.getInstance();
-        isManager = getIntent().getBooleanExtra("isManager", false);
-
-        drawing_screen = findViewById(R.id.drawing_screen);
-        paintClass = new DrawOnView(this);
-        drawing_screen.addView(paintClass);
-
-        submitGuess = findViewById(R.id.submit_guess);
-        guesserImageView = findViewById(R.id.guesser_image_view);
-        clearBtn = findViewById(R.id.clear);
-        undoBtn = findViewById(R.id.undo);
-        colorPalette = findViewById(R.id.color_palette);
-        clearBtn.setOnClickListener(v -> paintClass.clear());
-        undoBtn.setOnClickListener(v -> paintClass.undo());
-        colorPalette.setOnClickListener(this::pickColor);
-        guesserToolbar = findViewById(R.id.player_guess);
-        colorPickerView = findViewById(R.id.colorPickerView);
-        mainScreen = findViewById(R.id.main_drawing_screen);
-        hint = findViewById(R.id.hint);
-        wordWas = findViewById(R.id.word_was);
-        allToolbars = findViewById(R.id.tool_bars);
-        currentDrawing = findViewById(R.id.current_drawing);
-        currScore = findViewById(R.id.current_score);
-        timeLeftTextView = findViewById(R.id.time_left);
+        // set up the views
+        setButtonListeners();
+        // set up the paint class to draw with
+        setUpPaintClass();
+        // set up the countdown
         timeLeftTextView.setText(ROUND_TIME + "seconds");
-
-        usersListView = findViewById(R.id.side_users_list_view);
-        userAdapter = new UserAdapter(this, 0, 0);
-        usersListView.setAdapter(userAdapter);
-
-        gameId = getIntent().getIntExtra("gameId", -1);
-
-        findViewById(R.id.exit).setOnClickListener(v -> exit(this, client));
-        findViewById(R.id.open_users_side_bar).setOnClickListener(v ->
-                showHideUsersSideBar(findViewById(R.id.users_side_bar)));
-
-
-        submitGuess.setOnClickListener(v -> {
-            correctGuess = guesserToolbar.getText().toString();
-            client.sendMessage(guesserToolbar.getText().toString());
-            guesserToolbar.setText("");
-        });
-
-        overrideBackButton();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
-        musicIntent = new Intent(this, MusicService.class);
-        musicIntent.addCategory("start");
-        startService(musicIntent);
-
-        getInitialPlayingMode();
+        startMusic();
     }
 
-    private void overrideBackButton() {
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+    /**
+     * Returns a Handler that will be used to process messages sent from the client controller.
+     * @return The Handler that will be used to process messages sent from the client controller.
+     */
+    @Override
+    public Handler getMessageHandler() {
+        return new Handler(Looper.getMainLooper()) {
             @Override
-            public void handleOnBackPressed() {
-                if (backButtonCount >= 1) {
-                    exit(DrawingScreen.this, client);
-                }
-                else {
-                    Toast.makeText(DrawingScreen.this, "Press back again to exit", Toast.LENGTH_SHORT).show();
-                    backButtonCount++;
-                    new Handler().postDelayed(() -> backButtonCount = 0, DOUBLE_BACK_PRESS_INTERVAL);
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg);
+                Bundle bundle;
+                ClientController.MessageType type = ClientController.MessageType.values()[msg.what];
+                switch (type) {
+                    case MANAGER:
+                        updateIsManager(true);
+                        break;
+                    case USERS:
+                        onReceivedUsersUpdate(msg.obj.toString());
+                        break;
+                    case EXIT_OK:
+                        break;
+                    case DRAW:
+                        getAppropriateInterface(true, DatabaseController.getCachedUser().getUsername());
+                        updateWordToDraw(msg.obj.toString());
+                        startCountdown();
+                        break;
+                    case GUESS:
+                        bundle = msg.getData();
+                        String drawerName = bundle.getString("drawerName");
+                        String clue = bundle.getString("clue");
+
+                        getAppropriateInterface(false, drawerName);
+                        updateClue(clue);
+                        startCountdown();
+                        break;
+                    case CONTINUE:
+                        continueNextRound(msg.obj.toString());
+                        break;
+                    case GO_TO_WAITING_ROOM:
+                        bundle = msg.getData();
+                        String winnerName = bundle.getString("winnerName");
+                        String winnerPoints = bundle.getString("winnerPoints");
+
+                        goToWaitingRoom(winnerName, winnerPoints);
+                        break;
+                    case CORRECT_GUESS:
+                        updateCorrectGuess();
+                        break;
+                    case WRONG_GUESS:
+                        updateWrongGuess();
+                        break;
+                    case DRAWING_BYTES:
+                        processAndDisplayBitmapFromServer(msg.obj.toString());
+                        break;
                 }
             }
-
         };
-        getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
-    private void getInitialPlayingMode() {
-        client.receiveMessage().thenAccept(message -> runOnUiThread(() -> {
-           if (message.equals("draw")) {
-               getAppropriateInterface(true, cachedUser.getUsername());
-               startCountdown();
-               listenForServerDrawer();
-           }
-           else if (message.startsWith("guess")) {
-               String drawerName = message.split("guess ")[1];
-               getAppropriateInterface(false, drawerName);
-               startCountdown();
-               listenForServerNoneDrawer();
-           }
-           else if (message.startsWith("users")) {
-               lastUserSideBarFormat = message;
-               numOfPeopleInRoom = updateUsersSideBar(message, userAdapter);
-               getInitialPlayingMode();
-           }
-           else {
-               getInitialPlayingMode();
-           }
-        }));
-    }
-
-    @SuppressLint({"SetTextI18n", "DefaultLocale"})
-    private void listenForServerDrawer() {
-        client.receiveMessage().thenAccept(message -> runOnUiThread(() -> {
-            if (message.equals("exit ok")) {
-                return;
-            }
-            else if (message.equals("alone")) {
-                client.sendMessage("alone ok");
-            }
-            else if (message.equals("manager")) {
-                isManager = true;
-            }
-            else if (message.startsWith("users")) {
-                lastUserSideBarFormat = message;
-                numOfPeopleInRoom = updateUsersSideBar(message, userAdapter);
-                currScore.setText("Your score: " + getPointsByUsername(message, cachedUser.getUsername()));
-            }
-            else if (message.startsWith("guess")) {
-                String drawerName = message.split("guess ")[1];
-                getAppropriateInterface(false, drawerName);
-                listenForServerNoneDrawer();
-                return;
-            }
-            else if (message.startsWith("continue")) {
-                String roundNumber = "";
-                numOfGamesUntilRound++;
-                if (numOfGamesUntilRound >= numOfPeopleInRoom) {
-                    numOfGamesUntilRound = 0;
-                    currRoundNum++;
-                    if (currRoundNum <= NUM_OF_ROUNDS) {
-                        roundNumber = String.format("Round %d/%d\n", currRoundNum, NUM_OF_ROUNDS);
-                    }
-                }
-                mainScreen.setVisibility(View.VISIBLE);
-                SoundEffects.playSound(SoundEffects.next);
-                disableAllViews();
-                handler.removeCallbacks(updateCountdown);
-                correctGuess = message.split("continue ")[1];
-                hint.setText(correctGuess);
-                wordWas.setText(roundNumber + "The word was: " + correctGuess);
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        TimeUnit.SECONDS.sleep(3);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new IllegalStateException(e);
-                    }
-                }).thenAccept(unused -> runOnUiThread(() -> {
-                    mainScreen.setVisibility(View.GONE);
-                    paintClass.clearBoard();
-                    enableAllViews();
-                    resetClock();
-                    startCountdown();
-                    client.sendMessage("continue ok");
-                }));
-            }
-            else if (message.startsWith("winner")) {
-                backToWaitingRoom(message);
-                return;
-            }
-            else if (message.contains("word")){
-                String word = message.split("word: ")[1];
-                hint.setText(word);
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        TimeUnit.SECONDS.sleep(1);
-                        runOnUiThread(() -> wordWas.setText("The word was: " + word));
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new IllegalStateException(e);
-                    }
-                });
-            }
-            listenForServerDrawer();
-        }));
-    }
-
-    private void backToWaitingRoom(String data) {
-        client.receiveMessage().thenAccept(message -> {
-            if (message.equals("waiting")) {
-                client.sendMessage("waiting ok");
-                createWaitingRoomIntent(data);
-                return;
-            }
-            backToWaitingRoom(data);
-        });
-    }
-
-    private void createWaitingRoomIntent(String data) {
-        String[] winnerData = data.split("winner: ")[1].split(",");
+    /**
+     * Navigates to the waiting room screen.
+     * @param winnerName The name of the winner.
+     * @param winnerPoints The points of the winner.
+     */
+    private void goToWaitingRoom(String winnerName, String winnerPoints) {
         Intent intent = new Intent(DrawingScreen.this, WaitingRoom.class);
         intent.putExtra("isManager", isManager);
         intent.putExtra("gameId", gameId);
-        intent.putExtra("winnerData", winnerData);
-        intent.putExtra("selfPoints", getPointsByUsername(lastUserSideBarFormat, cachedUser.getUsername()));
+        intent.putExtra("winnerName", winnerName);
+        intent.putExtra("winnerPoints", winnerPoints);
+        intent.putExtra("selfPoints", DatabaseController.getPointsByUsername(lastUserSideBarFormat, DatabaseController.getCachedUser().getUsername()));
         startActivity(intent);
         finish();
     }
 
-    private static int getPointsByUsername(String jsonString, String username) {
-        try {
-            JSONArray jsonArray = new JSONArray(jsonString.split("users: ")[1]);
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                if (jsonObject.getString("username").equals(username)) {
-                    return jsonObject.getInt("points");
-                }
-            }
-            return -1;
-
-        } catch (Exception e) {
-            return -1;
-        }
-    }
-
-
-    @SuppressLint({"SetTextI18n", "DefaultLocale"})
-    private void listenForServerNoneDrawer() {
-        client.receiveMessage().thenAccept(message -> runOnUiThread(() -> {
-            if (message.equals("exit ok")) {
-                return;
-            }
-            else if (message.equals("manager")) {
-                isManager = true;
-                Toast.makeText(DrawingScreen.this, "you're the manager", Toast.LENGTH_SHORT).show();
-            }
-            else if (message.equals("correct")) {
-                SoundEffects.playSound(SoundEffects.correct);
-                updateCorrectGuess();
-            }
-            else if (message.equals("wrong")) {
-                SoundEffects.playSound(SoundEffects.wrong);
-            }
-            else if (message.startsWith("users")) {
-                lastUserSideBarFormat = message;
-                updateUsersSideBar(message, userAdapter);
-                currScore.setText("Your score: " + getPointsByUsername(message, cachedUser.getUsername()));
-            }
-            else if (message.startsWith("continue")) {
-                String roundNumber = "";
-                numOfGamesUntilRound++;
-                if (numOfGamesUntilRound >= numOfPeopleInRoom) {
-                    numOfGamesUntilRound = 0;
-                    currRoundNum++;
-                    if (currRoundNum <= NUM_OF_ROUNDS) {
-                        roundNumber = String.format("Round %d/%d\n", currRoundNum, NUM_OF_ROUNDS);
-                    }
-                }
-                mainScreen.setVisibility(View.VISIBLE);
-                SoundEffects.playSound(SoundEffects.next);
-                disableAllViews();
-                handler.removeCallbacks(updateCountdown);
-                correctGuess = message.split("continue ")[1];
-                hint.setText(correctGuess);
-                wordWas.setText(roundNumber + "The word was: " + correctGuess);
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        TimeUnit.SECONDS.sleep(3);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new IllegalStateException(e);
-                    }
-                }).thenAccept(unused -> runOnUiThread(() -> {
-                    mainScreen.setVisibility(View.GONE);
-                    paintClass.clearBoard();
-                    enableAllViews();
-                    resetClock();
-                    startCountdown();
-                    client.sendMessage("continue ok");
-                }));
-            }
-            else if (message.startsWith("clue")) {
-                hint.setText(message.split("clue: ")[1]);
-            }
-            else if (message.equals("draw")) {
-                paintClass.clear();
-                getAppropriateInterface(true, cachedUser.getUsername());
-                listenForServerDrawer();
-                return;
-            }
-            else if (message.startsWith("guess")) {
-                String drawerName = message.split("guess ")[1];
-                getAppropriateInterface(false, drawerName);
-            }
-            else if (message.startsWith("winner")) {
-                backToWaitingRoom(message);
-                return;
-            }
-            else if (message.equals("alone")) {
-                client.sendMessage("alone ok");
-            }
-            else if (message.contains("dataBytes")){
-                String encodedBitmap;
-                try {
-                    encodedBitmap = client.receiveAll(message);
-                } catch (ExecutionException | InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                byte[] bitmapBytes = client.transformToBitmap(encodedBitmap);
-                runOnUiThread(() -> {
-                    if (bitmapBytes != null) {
-                        putBitmapOnImage(bitmapBytes);
-                    }
-                });
-            }
-            listenForServerNoneDrawer();
-        }));
-    }
-
+    /**
+     * Updates the interface to indicate a correct guess.
+     */
     @SuppressLint("SetTextI18n")
     private void updateCorrectGuess() {
+        SoundEffects.playSound(SoundEffects.correct);
         allToolbars.setBackgroundColor(Color.parseColor("#B5189501"));
-        guesserToolbar.setEnabled(false);
+        guesserInputBox.setEnabled(false);
         hint.setText(correctGuess);
     }
 
+    /**
+     * Displays a bitmap image on the screen.
+     * @param bitmapBytes The byte array representing the bitmap.
+     */
     private void putBitmapOnImage(byte[] bitmapBytes) {
         Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
-        guesserImageView.setImageBitmap(bitmap);
+        displayedDrawingForGuesser.setImageBitmap(bitmap);
+        displayedDrawingForGuesser.setVisibility(View.VISIBLE);
     }
 
-    private void pickColor(final View view) {
+    /**
+     * Opens or closes the color picker.
+     */
+    private void pickColor() {
         colorPickerView.setColorListener((ColorEnvelopeListener) (envelope, fromUser) -> {
-            colorPalette.setColorFilter(envelope.getColor());
-            paintClass.setColor(envelope.getColor());
+            int color = envelope.getColor();
+            if (isShadeOfGray(color)) {
+                color = Color.BLACK;
+            }
+
+            colorPalette.setColorFilter(color);
+            paintClass.setColor(color);
             colorPickerView.setVisibility(View.GONE);
         });
+
+        // toggle colorPickerView visibility
         if (colorPickerView.getVisibility() == View.GONE) {
             colorPickerView.setVisibility(View.VISIBLE);
-        }
-        else if (colorPickerView.getVisibility() == View.VISIBLE) {
+        } else if (colorPickerView.getVisibility() == View.VISIBLE) {
             colorPickerView.setVisibility(View.GONE);
         }
     }
 
+    /** Check if is shade of gray
+     * @return if is gray */
+    private boolean isShadeOfGray(int color) {
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+        // check if shade of gray
+        return Math.abs(red - green) < 5 && Math.abs(red - blue) < 5 && Math.abs(green - blue) < 5 &&
+                color != Color.WHITE;
+    }
+
+    /**
+     * Updates the interface based on whether the user is the drawer or a guesser.
+     * @param isDrawer Whether the user is the drawer.
+     * @param drawerName The name of the drawer.
+     */
     @SuppressLint("SetTextI18n")
     private void getAppropriateInterface(boolean isDrawer, String drawerName) {
-        View drawerToolBar = findViewById(R.id.drawer_tool_bar);
-
         allToolbars.setBackgroundColor(Color.parseColor("#83AABBCC"));
 
         if (isDrawer) {
+            paintClass.clear();
             colorPalette.setColorFilter(Color.BLACK);
             paintClass.setColor(Color.BLACK);
             submitGuess.setVisibility(View.GONE);
-            guesserImageView.setVisibility(View.GONE);
+            displayedDrawingForGuesser.setVisibility(View.GONE);
             drawerToolBar.setVisibility(View.VISIBLE);
-            guesserToolbar.setVisibility(View.GONE);
+            guesserInputBox.setVisibility(View.GONE);
             paintClass.setVisibility(View.VISIBLE);
             currentDrawing.setText("Currently drawing: " + drawerName);
         }
         else {
             submitGuess.setVisibility(View.VISIBLE);
-            guesserImageView.setVisibility(View.VISIBLE);
             drawerToolBar.setVisibility(View.GONE);
-            guesserToolbar.setVisibility(View.VISIBLE);
+            guesserInputBox.setVisibility(View.VISIBLE);
             paintClass.setVisibility(View.GONE);
             currentDrawing.setText("Currently drawing: " + drawerName);
         }
@@ -435,53 +283,253 @@ public class DrawingScreen extends BaseGameActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        musicIntent = new Intent(this, MusicService.class);
+        // pause the music
+        Intent musicIntent = new Intent(this, MusicService.class);
         musicIntent.addCategory("pause");
         startService(musicIntent);
     }
 
+    /**
+     * Resets the countdown clock.
+     */
     @SuppressLint("SetTextI18n")
     private void resetClock() {
-        timeLeftTextView.setText(ROUND_TIME+ " seconds");
+        timeLeftTextView.setText(ROUND_TIME + " seconds");
         timeLeft = ROUND_TIME;
     }
 
+    /**
+     * Starts the countdown.
+     */
     @SuppressLint("SetTextI18n")
     private void startCountdown() {
-        final TextView timeLeftTextView = findViewById(R.id.time_left);
-        updateCountdown = new Runnable() {
+        countDownHandler.removeCallbacks(countDownUpdater);
+        countDownUpdater = new Runnable() {
             @Override
             public void run() {
                 if (timeLeft > 0) {
                     timeLeftTextView.setText(timeLeft + " seconds");
                     timeLeft--;
-                    handler.postDelayed(this, 1000);
+                    countDownHandler.postDelayed(this, MILLIS_IN_SECOND);
                 } else {
-                    handler.removeCallbacks(this);
+                    countDownHandler.removeCallbacks(this);
                     timeLeftTextView.setText("0 seconds");
                 }
             }
         };
-        handler.post(updateCountdown);
+        countDownHandler.post(countDownUpdater);
     }
 
+    /**
+     * Sets the listeners for the buttons on the screen.
+     */
+    private void setButtonListeners() {
+        drawing_screen = findViewById(R.id.drawing_screen);
+        submitGuess = findViewById(R.id.submit_guess);
+        displayedDrawingForGuesser = findViewById(R.id.displayed_drawing_for_guesser);
+        clearBtn = findViewById(R.id.clear);
+        undoBtn = findViewById(R.id.undo);
+        colorPalette = findViewById(R.id.color_palette);
+        guesserInputBox = findViewById(R.id.player_guess);
+        colorPickerView = findViewById(R.id.colorPickerView);
+        coolDownScreen = findViewById(R.id.cooldown_screen);
+        hint = findViewById(R.id.hint);
+        wordWas = findViewById(R.id.word_was);
+        allToolbars = findViewById(R.id.global_toolbar);
+        currentDrawing = findViewById(R.id.current_drawing);
+        currScore = findViewById(R.id.current_score);
+        timeLeftTextView = findViewById(R.id.time_left);
+        drawerToolBar = findViewById(R.id.drawer_tool_bar);
+        exit = findViewById(R.id.exit);
+        openUsersSideBar = findViewById(R.id.open_users_side_bar);
+
+        clearBtn.setOnClickListener(v -> paintClass.clear());
+        undoBtn.setOnClickListener(v -> paintClass.undo());
+        colorPalette.setOnClickListener(v -> pickColor());
+        submitGuess.setOnClickListener(v -> submitGuess());
+    }
+
+    /**
+     * Submits a guess to the server.
+     */
+    private void submitGuess() {
+        correctGuess = guesserInputBox.getText().toString();
+        clientController.submitGuess(correctGuess);
+        guesserInputBox.setText("");
+    }
+
+    /**
+     * Disables all views on the screen.
+     */
     private void disableAllViews() {
-        guesserToolbar.setEnabled(false);
+        guesserInputBox.setEnabled(false);
         undoBtn.setEnabled(false);
         colorPalette.setEnabled(false);
         clearBtn.setEnabled(false);
-        findViewById(R.id.open_users_side_bar).setEnabled(false);
+        openUsersSideBar.setEnabled(false);
         submitGuess.setEnabled(false);
-        findViewById(R.id.exit).setEnabled(false);
+        exit.setEnabled(false);
+        paintClass.setDrawingEnabled(false);
     }
 
+    /**
+     * Enables all views on the screen.
+     */
     private void enableAllViews() {
-        guesserToolbar.setEnabled(true);
+        guesserInputBox.setEnabled(true);
         submitGuess.setEnabled(true);
         undoBtn.setEnabled(true);
         colorPalette.setEnabled(true);
         clearBtn.setEnabled(true);
-        findViewById(R.id.open_users_side_bar).setEnabled(true);
-        findViewById(R.id.exit).setEnabled(true);
+        openUsersSideBar.setEnabled(true);
+        exit.setEnabled(true);
+        paintClass.setDrawingEnabled(true);
+    }
+
+    /**
+     * Updates the user sidebar when a user update is received from the server.
+     * @param usersJson The JSON string representing the users.
+     */
+    @SuppressLint("SetTextI18n")
+    private void onReceivedUsersUpdate(String usersJson) {
+        int selfScore = DatabaseController.getPointsByUsername(usersJson, DatabaseController.getCachedUser().getUsername());
+        updateUsersSideBar(usersJson);
+        lastUserSideBarFormat = usersJson;
+        numOfPeopleInRoom = updateUsersSideBar(usersJson);
+        currScore.setText("Your score: " + selfScore);
+    }
+
+    /**
+     * Sets up the paint class for the drawing screen.
+     */
+    private void setUpPaintClass() {
+        paintClass = new DrawOnView(this);
+        drawing_screen.addView(paintClass);
+    }
+
+    /**
+     * Starts the music service.
+     */
+    private void startMusic() {
+        Intent musicIntent = new Intent(this, MusicService.class);
+        musicIntent.addCategory("start");
+        startService(musicIntent);
+    }
+
+    /**
+     * Continues to the next round.
+     * @param roundWord The word for the round.
+     */
+    private void continueNextRound(String roundWord) {
+        displayCoolDownScreen(roundWord);
+        SoundEffects.playSound(SoundEffects.next);
+    }
+
+    /**
+     * Displays the cool down screen.
+     * @param roundWord The word for the round.
+     */
+    private void displayCoolDownScreen(String roundWord) {
+        String roundNumber = getRoundNumber();
+        // stop the countdown
+        countDownHandler.removeCallbacks(countDownUpdater);
+        addCoolDownScreen(roundWord, roundNumber);
+        coolDownScreen.setVisibility(View.VISIBLE);
+        waitForCoolDownScreen().thenAccept(unused ->
+                runOnUiThread(this::removeCoolDownScreen));
+    }
+
+    /**
+     * Gets the "round number: X" text and updates it.
+     * @return The round number.
+     */
+    @SuppressLint("DefaultLocale")
+    private String getRoundNumber() {
+        String roundNumber = "";
+
+        numOfGames++;
+        if (numOfGames >= numOfPeopleInRoom) {
+            numOfGames = 0;
+            currRoundNum++;
+            if (currRoundNum <= NUM_OF_ROUNDS) {
+                roundNumber = String.format("Round %d/%d\n", currRoundNum, NUM_OF_ROUNDS);
+            }
+        }
+        return roundNumber;
+    }
+
+    /**
+     * Waits for the cool down screen to finish.
+     * @return A CompletableFuture that will be completed when the cool down is finished.
+     */
+    private CompletableFuture<Void> waitForCoolDownScreen() {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(COOL_DOWN_SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(e);
+            }
+        });
+    }
+
+    /**
+     * Adds the cool down screen to the view.
+     * @param roundWord The word for the round.
+     * @param roundNumber The "round number: X" text.
+     */
+    @SuppressLint("SetTextI18n")
+    private void addCoolDownScreen(String roundWord, String roundNumber) {
+        hint.setText(roundWord);
+        wordWas.setText(roundNumber + "The word was: " + roundWord);
+        disableAllViews();
+    }
+
+    /**
+     * Removes the cool down screen from the screen.
+     */
+    private void removeCoolDownScreen() {
+        coolDownScreen.setVisibility(View.GONE);
+        displayedDrawingForGuesser.setBackgroundColor(Color.WHITE);
+        enableAllViews();
+        resetClock();
+        startCountdown();
+        clientController.ackContinue();
+    }
+
+    /**
+     * Updates the word to draw.
+     * @param word The word to draw.
+     */
+    @SuppressLint("SetTextI18n")
+    private void updateWordToDraw(String word) {
+        wordWas.setText("The word was: " + word);
+        hint.setText(word);
+    }
+
+    /**
+     * Updates the interface to indicate a wrong guess.
+     */
+    private void updateWrongGuess() {
+        SoundEffects.playSound(SoundEffects.wrong);
+    }
+
+    /**
+     * Processes a bitmap from the server and displays it on the screen.
+     * @param initialData The initial data received from the server.
+     */
+    private void processAndDisplayBitmapFromServer(String initialData) {
+        byte[] bitmapBytes = clientController.getBitmapBytes(initialData);
+        if (bitmapBytes != null) {
+            putBitmapOnImage(bitmapBytes);
+        }
+    }
+
+    /**
+     * Updates the clue on the screen.
+     * @param clue The clue.
+     */
+    private void updateClue(String clue) {
+        hint.setText(clue);
     }
 }

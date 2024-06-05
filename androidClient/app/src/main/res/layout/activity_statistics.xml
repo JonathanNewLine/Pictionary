@@ -47,6 +47,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Games Played:"
+                android:textColor="@color/black"
                 android:textSize="27sp"
                 android:textStyle="bold" />
 
@@ -54,6 +55,7 @@
                 android:id="@+id/games_played"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/black"
                 android:layout_alignParentEnd="true"
                 android:layout_gravity="end"
                 android:text="XXX"
@@ -78,6 +80,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/black"
                 android:text="Games Won:"
                 android:textSize="27sp"
                 android:textStyle="bold" />
@@ -88,6 +91,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_gravity="end"
+                android:textColor="@color/black"
                 android:text="XXX"
                 android:textSize="27sp"
                 android:textStyle="bold" />
@@ -110,6 +114,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/black"
                 android:text="Guesses:"
                 android:textSize="27sp"
                 android:textStyle="bold" />
@@ -118,6 +123,7 @@
                 android:id="@+id/guesses"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/black"
                 android:layout_alignParentEnd="true"
                 android:layout_gravity="end"
                 android:text="XXX"
@@ -143,12 +149,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Correct Guesses:"
+                android:textColor="@color/black"
                 android:textSize="27sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/correct_guesses"
                 android:layout_width="wrap_content"
+                android:textColor="@color/black"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_gravity="end"
@@ -176,6 +184,7 @@
                 android:layout_height="wrap_content"
                 android:text="Accuracy:"
                 android:textSize="27sp"
+                android:textColor="@color/black"
                 android:textStyle="bold" />
 
             <TextView
@@ -185,6 +194,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_gravity="end"
                 android:text="XXX"
+                android:textColor="@color/black"
                 android:textSize="27sp"
                 android:textStyle="bold" />
         </RelativeLayout>

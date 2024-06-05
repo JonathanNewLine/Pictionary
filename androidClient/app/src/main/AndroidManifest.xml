@@ -22,24 +22,31 @@
             android:permission="TODO" />
         <activity
             android:name=".BaseGameActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".BaseMainActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".DrawingScreen"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".WaitingRoom"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".Statistics"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".Settings"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".MainMenu"
+            android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
