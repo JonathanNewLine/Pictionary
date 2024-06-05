@@ -106,27 +106,27 @@ public class DatabaseController {
         }
 
         usersTable.whereEqualTo("username", username).get()
-                .addOnSuccessListener(documentSnapshots -> {
-                    // check for username uniqueness
-                    if (!documentSnapshots.isEmpty()) {
-                        // username already exists
-                        callback.onRegisterFailure("Username already exists");
-                    }
-                    else {
-                        // username unique
-                        mAuth.createUserWithEmailAndPassword(email, password)
-                                .addOnSuccessListener(activity, (OnSuccessListener<? super AuthResult>) task -> {
-                                    Log.d(TAG, "createUserWithEmail:success");
-                                    FirebaseUser user = mAuth.getCurrentUser();
+            .addOnSuccessListener(documentSnapshots -> {
+                // check for username uniqueness
+                if (!documentSnapshots.isEmpty()) {
+                    // username already exists
+                    callback.onRegisterFailure("Username already exists");
+                }
+                else {
+                    // username unique
+                    mAuth.createUserWithEmailAndPassword(email, password)
+                            .addOnSuccessListener(activity, (OnSuccessListener<? super AuthResult>) task -> {
+                                Log.d(TAG, "createUserWithEmail:success");
+                                FirebaseUser user = mAuth.getCurrentUser();
 
-                                    assert user != null;
-                                    usersTable.document(user.getUid()).set(new DatabaseUser(email, username));
-                                    callback.onRegisterSuccess(email, password);
-                                })
-                                .addOnFailureListener(e ->
-                                        callback.onRegisterFailure("Sign up failed: " + e.getMessage()));
-                    }
-                });
+                                assert user != null;
+                                usersTable.document(user.getUid()).set(new DatabaseUser(email, username));
+                                callback.onRegisterSuccess(email, password);
+                            })
+                            .addOnFailureListener(e ->
+                                    callback.onRegisterFailure("Sign up failed: " + e.getMessage()));
+                }
+            });
     }
 
     /**

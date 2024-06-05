@@ -46,9 +46,9 @@ public abstract class BaseMainActivity extends AppCompatActivity {
 
     /** controllers */
     // database
-    protected DatabaseController databaseController;
+    protected static DatabaseController databaseController;
     // client controller
-    protected ClientController clientController;
+    protected static ClientController clientController;
 
     /** other */
     // flag to check if onStart is called already
