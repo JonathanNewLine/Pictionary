@@ -96,8 +96,12 @@ public class MainMenu extends BaseMainActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        if (DatabaseController.getCachedUser() == null) {
+        DatabaseUser cachedUser = DatabaseController.getCachedUser();
+        if (cachedUser == null) {
             updateToLogoutInterface();
+        }
+        else {
+            updateToLoginInterface(cachedUser.getUsername());
         }
     }
 
