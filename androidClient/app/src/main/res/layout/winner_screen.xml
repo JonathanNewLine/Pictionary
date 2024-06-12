@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    android:animateLayoutChanges="true">
+
+    <ImageView
+        android:id="@+id/back_to_waiting_room"
+        android:layout_width="37dp"
+        android:layout_height="37dp"
+        android:layout_marginTop="20dp"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="21dp"
+        app:srcCompat="@drawable/back" />
+
+    <ImageView
+        android:id="@+id/winner_loser_image"
+        android:layout_width="220dp"
+        android:layout_height="250dp"
+        android:layout_below="@+id/loser_text"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="30dp"
+        android:src="@drawable/trophy" />
+
+    <TextView
+        android:id="@+id/winner_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/winner_loser_image"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="40dp"
+        android:gravity="center"
+        android:text="Winner:\nMatanCool"
+        android:textColor="#BA1138"
+        android:textSize="40sp"
+        android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/imageView7"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_alignTop="@+id/winner_screen_player_score"
+        android:layout_alignBottom="@+id/winner_screen_player_score"
+        android:layout_marginEnd="5dp"
+        android:layout_toStartOf="@+id/winner_screen_player_score"
+        app:srcCompat="@drawable/star" />
+
+    <TextView
+        android:id="@+id/winner_score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/winner_name"
+        android:layout_alignStart="@+id/winner_name"
+        android:layout_alignEnd="@+id/winner_name"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:textColor="#5A343D"
+        android:gravity="center"
+        android:text="With a score of:\nXXX points!"
+        android:textSize="25sp"
+        android:textStyle="italic|bold" />
+
+    <TextView
+        android:id="@+id/winner_screen_player_score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/back_to_waiting_room"
+        android:layout_alignBottom="@+id/back_to_waiting_room"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="15dp"
+        android:gravity="center"
+        android:text="Your score: XXX"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <include
+        android:id="@+id/users_side_bar"
+        layout="@layout/users_side_bar"
+        android:visibility="gone"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"/>
+
+    <TextView
+        android:id="@+id/loser_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textColor="#BA1138"
+        android:visibility="invisible"
+        android:textSize="45sp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignTop="@+id/back_to_waiting_room"
+        android:layout_marginTop="70dp"
+        android:text="You Lose" />
+</RelativeLayout>

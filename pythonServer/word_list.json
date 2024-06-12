@@ -1,0 +1,1370 @@
+[
+    {
+        "word": "Swing",
+        "length": 5
+    },
+    {
+        "word": "Coat",
+        "length": 4
+    },
+    {
+        "word": "Shoe",
+        "length": 4
+    },
+    {
+        "word": "Ocean",
+        "length": 5
+    },
+    {
+        "word": "Dog",
+        "length": 3
+    },
+    {
+        "word": "Mouth",
+        "length": 5
+    },
+    {
+        "word": "Milk",
+        "length": 4
+    },
+    {
+        "word": "Duck",
+        "length": 4
+    },
+    {
+        "word": "Skateboard",
+        "length": 10
+    },
+    {
+        "word": "Bird",
+        "length": 4
+    },
+    {
+        "word": "Mouse",
+        "length": 5
+    },
+    {
+        "word": "Whale",
+        "length": 5
+    },
+    {
+        "word": "Jacket",
+        "length": 6
+    },
+    {
+        "word": "Shirt",
+        "length": 5
+    },
+    {
+        "word": "Hippo",
+        "length": 5
+    },
+    {
+        "word": "Beach",
+        "length": 5
+    },
+    {
+        "word": "Egg",
+        "length": 3
+    },
+    {
+        "word": "Cookie",
+        "length": 6
+    },
+    {
+        "word": "Cheese",
+        "length": 6
+    },
+    {
+        "word": "Skip",
+        "length": 4
+    },
+    {
+        "word": "Drum",
+        "length": 4
+    },
+    {
+        "word": "homework",
+        "length": 8
+    },
+    {
+        "word": "glue",
+        "length": 4
+    },
+    {
+        "word": "eraser",
+        "length": 6
+    },
+    {
+        "word": "peace",
+        "length": 5
+    },
+    {
+        "word": "panic",
+        "length": 5
+    },
+    {
+        "word": "alarm",
+        "length": 5
+    },
+    {
+        "word": "far",
+        "length": 3
+    },
+    {
+        "word": "comfy",
+        "length": 5
+    },
+    {
+        "word": "dripping",
+        "length": 8
+    },
+    {
+        "word": "boring",
+        "length": 6
+    },
+    {
+        "word": "hot",
+        "length": 3
+    },
+    {
+        "word": "cold",
+        "length": 4
+    },
+    {
+        "word": "parents",
+        "length": 7
+    },
+    {
+        "word": "closet",
+        "length": 6
+    },
+    {
+        "word": "laugh",
+        "length": 5
+    },
+    {
+        "word": "falling",
+        "length": 7
+    },
+    {
+        "word": "sleepover",
+        "length": 9
+    },
+    {
+        "word": "calendar",
+        "length": 8
+    },
+    {
+        "word": "sunscreen",
+        "length": 9
+    },
+    {
+        "word": "panda",
+        "length": 5
+    },
+    {
+        "word": "hair",
+        "length": 4
+    },
+    {
+        "word": "afraid",
+        "length": 6
+    },
+    {
+        "word": "dictionary",
+        "length": 10
+    },
+    {
+        "word": "homerun",
+        "length": 7
+    },
+    {
+        "word": "imagination",
+        "length": 12
+    },
+    {
+        "word": "Angry",
+        "length": 5
+    },
+    {
+        "word": "Fireworks",
+        "length": 9
+    },
+    {
+        "word": "Pumpkin",
+        "length": 7
+    },
+    {
+        "word": "Baby",
+        "length": 4
+    },
+    {
+        "word": "Flower",
+        "length": 6
+    },
+    {
+        "word": "Rainbow",
+        "length": 7
+    },
+    {
+        "word": "Beard",
+        "length": 5
+    },
+    {
+        "word": "Recycle",
+        "length": 7
+    },
+    {
+        "word": "Bible",
+        "length": 5
+    },
+    {
+        "word": "Giraffe",
+        "length": 7
+    },
+    {
+        "word": "Bikini",
+        "length": 6
+    },
+    {
+        "word": "Glasses",
+        "length": 7
+    },
+    {
+        "word": "Snowflake",
+        "length": 9
+    },
+    {
+        "word": "Book",
+        "length": 4
+    },
+    {
+        "word": "Stairs",
+        "length": 6
+    },
+    {
+        "word": "Bucket",
+        "length": 6
+    },
+    {
+        "word": "Starfish",
+        "length": 8
+    },
+    {
+        "word": "Igloo",
+        "length": 5
+    },
+    {
+        "word": "Strawberry",
+        "length": 10
+    },
+    {
+        "word": "Butterfly",
+        "length": 9
+    },
+    {
+        "word": "Sun",
+        "length": 3
+    },
+    {
+        "word": "Camera",
+        "length": 6
+    },
+    {
+        "word": "Lamp",
+        "length": 4
+    },
+    {
+        "word": "Tire",
+        "length": 4
+    },
+    {
+        "word": "Cat",
+        "length": 3
+    },
+    {
+        "word": "Lion",
+        "length": 4
+    },
+    {
+        "word": "Toast",
+        "length": 5
+    },
+    {
+        "word": "Church",
+        "length": 6
+    },
+    {
+        "word": "Mailbox",
+        "length": 7
+    },
+    {
+        "word": "Toothbrush",
+        "length": 10
+    },
+    {
+        "word": "Crayon",
+        "length": 6
+    },
+    {
+        "word": "Night",
+        "length": 5
+    },
+    {
+        "word": "Toothpaste",
+        "length": 10
+    },
+    {
+        "word": "Dolphin",
+        "length": 7
+    },
+    {
+        "word": "Nose",
+        "length": 4
+    },
+    {
+        "word": "Truck",
+        "length": 5
+    },
+    {
+        "word": "Olympics",
+        "length": 8
+    },
+    {
+        "word": "Volleyball",
+        "length": 10
+    },
+    {
+        "word": "Peanut",
+        "length": 6
+    },
+    {
+        "word": "drip",
+        "length": 4
+    },
+    {
+        "word": "shampoo",
+        "length": 7
+    },
+    {
+        "word": "point",
+        "length": 5
+    },
+    {
+        "word": "time machine",
+        "length": 12
+    },
+    {
+        "word": "yardstick",
+        "length": 9
+    },
+    {
+        "word": "think",
+        "length": 5
+    },
+    {
+        "word": "world",
+        "length": 5
+    },
+    {
+        "word": "shower",
+        "length": 6
+    },
+    {
+        "word": "curtain",
+        "length": 7
+    },
+    {
+        "word": "sandbox",
+        "length": 7
+    },
+    {
+        "word": "bruise",
+        "length": 6
+    },
+    {
+        "word": "quicksand",
+        "length": 9
+    },
+    {
+        "word": "fog",
+        "length": 3
+    },
+    {
+        "word": "gasoline",
+        "length": 8
+    },
+    {
+        "word": "pocket",
+        "length": 6
+    },
+    {
+        "word": "honk",
+        "length": 4
+    },
+    {
+        "word": "sponge",
+        "length": 6
+    },
+    {
+        "word": "rim",
+        "length": 3
+    },
+    {
+        "word": "bride",
+        "length": 5
+    },
+    {
+        "word": "wig",
+        "length": 3
+    },
+    {
+        "word": "zipper",
+        "length": 6
+    },
+    {
+        "word": "wag",
+        "length": 3
+    },
+    {
+        "word": "pilot",
+        "length": 5
+    },
+    {
+        "word": "baguette",
+        "length": 8
+    },
+    {
+        "word": "fireman",
+        "length": 7
+    },
+    {
+        "word": "season",
+        "length": 6
+    },
+    {
+        "word": "Internet",
+        "length": 8
+    },
+    {
+        "word": "chess",
+        "length": 5
+    },
+    {
+        "word": "puppet",
+        "length": 6
+    },
+    {
+        "word": "chime",
+        "length": 5
+    },
+    {
+        "word": "ivy",
+        "length": 3
+    },
+    {
+        "word": "applause",
+        "length": 8
+    },
+    {
+        "word": "application",
+        "length": 12
+    },
+    {
+        "word": "avocato",
+        "length": 7
+    },
+    {
+        "word": "award",
+        "length": 5
+    },
+    {
+        "word": "badge",
+        "length": 5
+    },
+    {
+        "word": "baggage",
+        "length": 7
+    },
+    {
+        "word": "baker",
+        "length": 5
+    },
+    {
+        "word": "barber",
+        "length": 6
+    },
+    {
+        "word": "bargain",
+        "length": 7
+    },
+    {
+        "word": "basket",
+        "length": 6
+    },
+    {
+        "word": "bedbug",
+        "length": 6
+    },
+    {
+        "word": "bettle",
+        "length": 6
+    },
+    {
+        "word": "beggar",
+        "length": 6
+    },
+    {
+        "word": "birthday",
+        "length": 8
+    },
+    {
+        "word": "biscuit",
+        "length": 7
+    },
+    {
+        "word": "bleach",
+        "length": 6
+    },
+    {
+        "word": "blinds",
+        "length": 6
+    },
+    {
+        "word": "bobsled",
+        "length": 7
+    },
+    {
+        "word": "Bonnet",
+        "length": 6
+    },
+    {
+        "word": "bookend",
+        "length": 7
+    },
+    {
+        "word": "boundary",
+        "length": 8
+    },
+    {
+        "word": "brain",
+        "length": 5
+    },
+    {
+        "word": "bubble",
+        "length": 6
+    },
+    {
+        "word": "Brain",
+        "length": 5
+    },
+    {
+        "word": "Kitten",
+        "length": 6
+    },
+    {
+        "word": "Playground",
+        "length": 10
+    },
+    {
+        "word": "Kiwi",
+        "length": 4
+    },
+    {
+        "word": "Buckle",
+        "length": 6
+    },
+    {
+        "word": "Lipstick",
+        "length": 8
+    },
+    {
+        "word": "Raindrop",
+        "length": 8
+    },
+    {
+        "word": "Bus",
+        "length": 3
+    },
+    {
+        "word": "Lobster",
+        "length": 7
+    },
+    {
+        "word": "Robot",
+        "length": 5
+    },
+    {
+        "word": "Lollipop",
+        "length": 8
+    },
+    {
+        "word": "Castle",
+        "length": 6
+    },
+    {
+        "word": "Magnet",
+        "length": 6
+    },
+    {
+        "word": "Slipper",
+        "length": 7
+    },
+    {
+        "word": "Megaphone",
+        "length": 9
+    },
+    {
+        "word": "Snowball",
+        "length": 8
+    },
+    {
+        "word": "Mermaid",
+        "length": 7
+    },
+    {
+        "word": "Sprinkler",
+        "length": 9
+    },
+    {
+        "word": "Computer",
+        "length": 8
+    },
+    {
+        "word": "Minivan",
+        "length": 7
+    },
+    {
+        "word": "Dragon",
+        "length": 6
+    },
+    {
+        "word": "Music",
+        "length": 5
+    },
+    {
+        "word": "Dumbbell",
+        "length": 8
+    },
+    {
+        "word": "Telescope",
+        "length": 9
+    },
+    {
+        "word": "Eel",
+        "length": 3
+    },
+    {
+        "word": "Nurse",
+        "length": 5
+    },
+    {
+        "word": "Train",
+        "length": 5
+    },
+    {
+        "word": "Owl",
+        "length": 3
+    },
+    {
+        "word": "Tricycle",
+        "length": 9
+    },
+    {
+        "word": "Flag",
+        "length": 4
+    },
+    {
+        "word": "Tutu",
+        "length": 4
+    },
+    {
+        "word": "Piano",
+        "length": 5
+    },
+    {
+        "word": "Garbage",
+        "length": 7
+    },
+    {
+        "word": "Park",
+        "length": 4
+    },
+    {
+        "word": "Pirate",
+        "length": 6
+    },
+    {
+        "word": "Ski",
+        "length": 3
+    },
+    {
+        "word": "Whistle",
+        "length": 7
+    },
+    {
+        "word": "State",
+        "length": 5
+    },
+    {
+        "word": "Baseball",
+        "length": 8
+    },
+    {
+        "word": "Coal",
+        "length": 4
+    },
+    {
+        "word": "Queen",
+        "length": 5
+    },
+    {
+        "word": "Photograph",
+        "length": 10
+    },
+    {
+        "word": "Computer",
+        "length": 8
+    },
+    {
+        "word": "Hockey",
+        "length": 6
+    },
+    {
+        "word": "iPad",
+        "length": 4
+    },
+    {
+        "word": "Frog",
+        "length": 4
+    },
+    {
+        "word": "Lawnmower",
+        "length": 9
+    },
+    {
+        "word": "Mattress",
+        "length": 8
+    },
+    {
+        "word": "Pinwheel",
+        "length": 8
+    },
+    {
+        "word": "Cake",
+        "length": 4
+    },
+    {
+        "word": "Circus",
+        "length": 6
+    },
+    {
+        "word": "Battery",
+        "length": 7
+    },
+    {
+        "word": "Mailman",
+        "length": 7
+    },
+    {
+        "word": "Cowboy",
+        "length": 6
+    },
+    {
+        "word": "Password",
+        "length": 8
+    },
+    {
+        "word": "Teacher",
+        "length": 7
+    },
+    {
+        "word": "Batman",
+        "length": 6
+    },
+    {
+        "word": "Spongebob",
+        "length": 9
+    },
+    {
+        "word": "Zendaya",
+        "length": 7
+    },
+    {
+        "word": "Superman",
+        "length": 8
+    },
+    {
+        "word": "Nemo",
+        "length": 4
+    },
+    {
+        "word": "Incredible",
+        "length": 11
+    },
+    {
+        "word": "Spiderman",
+        "length": 9
+    },
+    {
+        "word": "Vampire",
+        "length": 7
+    },
+    {
+        "word": "Birthday",
+        "length": 8
+    },
+    {
+        "word": "Hockey",
+        "length": 6
+    },
+    {
+        "word": "Hotel",
+        "length": 5
+    },
+    {
+        "word": "Blizzard",
+        "length": 8
+    },
+    {
+        "word": "Burrito",
+        "length": 7
+    },
+    {
+        "word": "Koala",
+        "length": 5
+    },
+    {
+        "word": "Skip",
+        "length": 4
+    },
+    {
+        "word": "Captain",
+        "length": 7
+    },
+    {
+        "word": "Leprechaun",
+        "length": 10
+    },
+    {
+        "word": "Chandelier",
+        "length": 10
+    },
+    {
+        "word": "Light",
+        "length": 5
+    },
+    {
+        "word": "Space",
+        "length": 5
+    },
+    {
+        "word": "Crib",
+        "length": 4
+    },
+    {
+        "word": "Mask",
+        "length": 4
+    },
+    {
+        "word": "Stethoscope",
+        "length": 11
+    },
+    {
+        "word": "Carry",
+        "length": 5
+    },
+    {
+        "word": "Run",
+        "length": 3
+    },
+    {
+        "word": "Jump",
+        "length": 4
+    },
+    {
+        "word": "Swim",
+        "length": 4
+    },
+    {
+        "word": "Skip",
+        "length": 4
+    },
+    {
+        "word": "Fly",
+        "length": 3
+    },
+    {
+        "word": "Row",
+        "length": 3
+    },
+    {
+        "word": "Catch",
+        "length": 5
+    },
+    {
+        "word": "Watch",
+        "length": 5
+    },
+    {
+        "word": "Swing",
+        "length": 5
+    },
+    {
+        "word": "Learn",
+        "length": 5
+    },
+    {
+        "word": "Love",
+        "length": 4
+    },
+    {
+        "word": "Drink",
+        "length": 5
+    },
+    {
+        "word": "Burp",
+        "length": 4
+    },
+    {
+        "word": "Eat",
+        "length": 3
+    },
+    {
+        "word": "Read",
+        "length": 4
+    },
+    {
+        "word": "Type",
+        "length": 4
+    },
+    {
+        "word": "Download",
+        "length": 8
+    },
+    {
+        "word": "Call",
+        "length": 4
+    },
+    {
+        "word": "Snap",
+        "length": 4
+    },
+    {
+        "word": "Text",
+        "length": 4
+    },
+    {
+        "word": "Pose",
+        "length": 4
+    },
+    {
+        "word": "Shout",
+        "length": 5
+    },
+    {
+        "word": "Sleep",
+        "length": 5
+    },
+    {
+        "word": "Scratch",
+        "length": 7
+    },
+    {
+        "word": "Hug",
+        "length": 3
+    },
+    {
+        "word": "Cut",
+        "length": 3
+    },
+    {
+        "word": "Bang",
+        "length": 4
+    },
+    {
+        "word": "Spit",
+        "length": 4
+    },
+    {
+        "word": "Tie",
+        "length": 3
+    },
+    {
+        "word": "Open",
+        "length": 4
+    },
+    {
+        "word": "Listen",
+        "length": 6
+    },
+    {
+        "word": "Write",
+        "length": 5
+    },
+    {
+        "word": "Sing",
+        "length": 4
+    },
+    {
+        "word": "Pray",
+        "length": 4
+    },
+    {
+        "word": "Close",
+        "length": 5
+    },
+    {
+        "word": "Dance",
+        "length": 5
+    },
+    {
+        "word": "Dispatch",
+        "length": 8
+    },
+    {
+        "word": "Trade",
+        "length": 5
+    },
+    {
+        "word": "Drive",
+        "length": 5
+    },
+    {
+        "word": "Unite",
+        "length": 5
+    },
+    {
+        "word": "Multiply",
+        "length": 8
+    },
+    {
+        "word": "Cook",
+        "length": 4
+    },
+    {
+        "word": "Unplug",
+        "length": 6
+    },
+    {
+        "word": "Purchase",
+        "length": 8
+    },
+    {
+        "word": "Mechanic",
+        "length": 8
+    },
+    {
+        "word": "Stork",
+        "length": 5
+    },
+    {
+        "word": "Dance",
+        "length": 5
+    },
+    {
+        "word": "Mom",
+        "length": 3
+    },
+    {
+        "word": "Sunburn",
+        "length": 7
+    },
+    {
+        "word": "Deodorant",
+        "length": 9
+    },
+    {
+        "word": "Thread",
+        "length": 6
+    },
+    {
+        "word": "Facebook",
+        "length": 8
+    },
+    {
+        "word": "Pantyhose",
+        "length": 9
+    },
+    {
+        "word": "Tourist",
+        "length": 7
+    },
+    {
+        "word": "Flat",
+        "length": 4
+    },
+    {
+        "word": "USA",
+        "length": 3
+    },
+    {
+        "word": "Frame",
+        "length": 5
+    },
+    {
+        "word": "Photo",
+        "length": 5
+    },
+    {
+        "word": "WIFI",
+        "length": 4
+    },
+    {
+        "word": "Zombie",
+        "length": 6
+    },
+    {
+        "word": "Game",
+        "length": 4
+    },
+    {
+        "word": "Pirate",
+        "length": 6
+    },
+    {
+        "word": "business",
+        "length": 8
+    },
+    {
+        "word": "cabin",
+        "length": 5
+    },
+    {
+        "word": "cardboard",
+        "length": 9
+    },
+    {
+        "word": "carpenter",
+        "length": 9
+    },
+    {
+        "word": "carrot",
+        "length": 6
+    },
+    {
+        "word": "catalog",
+        "length": 7
+    },
+    {
+        "word": "ceiling",
+        "length": 7
+    },
+    {
+        "word": "channel",
+        "length": 7
+    },
+    {
+        "word": "charger",
+        "length": 7
+    },
+    {
+        "word": "cheerleader",
+        "length": 11
+    },
+    {
+        "word": "chef",
+        "length": 4
+    },
+    {
+        "word": "chess",
+        "length": 5
+    },
+    {
+        "word": "chestnut",
+        "length": 8
+    },
+    {
+        "word": "chime",
+        "length": 5
+    },
+    {
+        "word": "cliff",
+        "length": 5
+    },
+    {
+        "word": "cloak",
+        "length": 5
+    },
+    {
+        "word": "clog",
+        "length": 4
+    },
+    {
+        "word": "coach",
+        "length": 5
+    },
+    {
+        "word": "comedian",
+        "length": 8
+    },
+    {
+        "word": "comfy",
+        "length": 5
+    },
+    {
+        "word": "commercial",
+        "length": 10
+    },
+    {
+        "word": "conversation",
+        "length": 13
+    },
+    {
+        "word": "cowboy",
+        "length": 6
+    },
+    {
+        "word": "cramp",
+        "length": 5
+    },
+    {
+        "word": "cruise",
+        "length": 6
+    },
+    {
+        "word": "crumbs",
+        "length": 6
+    },
+    {
+        "word": "crust",
+        "length": 5
+    },
+    {
+        "word": "cuff",
+        "length": 4
+    },
+    {
+        "word": "cupcake",
+        "length": 7
+    },
+    {
+        "word": "curtain",
+        "length": 7
+    },
+    {
+        "word": "darkness",
+        "length": 8
+    },
+    {
+        "word": "darts",
+        "length": 5
+    },
+    {
+        "word": "dashboard",
+        "length": 9
+    },
+    {
+        "word": "Bicycle",
+        "length": 7
+    },
+    {
+        "word": "Skate",
+        "length": 5
+    },
+    {
+        "word": "Electricity",
+        "length": 11
+    },
+    {
+        "word": "Thief",
+        "length": 5
+    },
+    {
+        "word": "Teapot",
+        "length": 6
+    },
+    {
+        "word": "Deep",
+        "length": 4
+    },
+    {
+        "word": "Spring",
+        "length": 6
+    },
+    {
+        "word": "Nature",
+        "length": 6
+    },
+    {
+        "word": "Shallow",
+        "length": 7
+    },
+    {
+        "word": "Outside",
+        "length": 7
+    },
+    {
+        "word": "America",
+        "length": 7
+    },
+    {
+        "word": "Wax",
+        "length": 3
+    },
+    {
+        "word": "Music",
+        "length": 5
+    },
+    {
+        "word": "Popsicle",
+        "length": 8
+    },
+    {
+        "word": "Brain",
+        "length": 5
+    },
+    {
+        "word": "Knee",
+        "length": 4
+    },
+    {
+        "word": "Pineapple",
+        "length": 9
+    },
+    {
+        "word": "Tusk",
+        "length": 4
+    },
+    {
+        "word": "Sprinkler",
+        "length": 9
+    },
+    {
+        "word": "Money",
+        "length": 5
+    },
+    {
+        "word": "Pool",
+        "length": 4
+    },
+    {
+        "word": "Lighthouse",
+        "length": 10
+    },
+    {
+        "word": "Doormat",
+        "length": 7
+    },
+    {
+        "word": "Face",
+        "length": 4
+    },
+    {
+        "word": "Flute",
+        "length": 5
+    },
+    {
+        "word": "Rug",
+        "length": 3
+    },
+    {
+        "word": "Snowball",
+        "length": 8
+    },
+    {
+        "word": "Purse",
+        "length": 5
+    }
+]
